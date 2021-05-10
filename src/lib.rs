@@ -11,8 +11,6 @@ pub enum JsonValue {
     JsonBool(bool),
 }
 
-use crate::JsonValue::*;
-
 fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashMap<String, Option<JsonValue>>, Box<dyn Error>> {
     *position += 1;
     let mut json_obj: HashMap<String, Option<JsonValue>> = HashMap::new();
@@ -157,6 +155,7 @@ fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) {
 
 impl JsonValue {
     fn new(json_chars: &Vec<char>, position: &mut usize) -> Result<Option<JsonValue>, Box<dyn Error>> {
+        use crate::JsonValue::*;
         skip_white_space(json_chars, position);
 
         let token: char = json_chars[*position];
