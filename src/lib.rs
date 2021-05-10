@@ -51,16 +51,19 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Op
     // Char will be an open square bracket
     *position += 1;
     let mut json_arr: Vec<Option<JsonValue>> = vec![];
+    let mut done: bool = false;
 
-    while json_chars[*position] != ']' {
+    while !done {
         json_arr.push(JsonValue::new(&json_chars, position)?);
 
-        while json_chars[*position] != ',' && json_chars[*position] != ']' {
-            *position += 1;
-        }
+        skip_white_space(json_chars, position);
 
         if json_chars[*position] == ',' {
             *position += 1;
+        } else if json_chars[*position] == ']' {
+            done = true;
+        } else {
+            return Err("Invalid JSON".into());
         }
     }
 
@@ -152,14 +155,14 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
             } else {
                 num.push(token);
             }
+
+            *position += 1;
+            token = json_chars[*position];
         } else if token == ' ' || token == '\n' || token == '\r' || token == ',' {
             done = true;
         } else {
             return Err("Invalid Json".into());
         }
-        
-        *position += 1;
-        token = json_chars[*position];
     }
 
     return Ok(
