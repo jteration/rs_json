@@ -160,7 +160,7 @@ impl JsonValue {
         skip_white_space(json_chars, position);
 
         let token: char = json_chars[*position];
-        let mut value: Option<JsonValue> = None;
+        let value: Option<JsonValue>;
 
         if token == '"' {
             value = Some(JsonString(get_json_string(&json_chars, position)?));
