@@ -11,6 +11,12 @@ pub enum JsonValue {
     JsonBool(bool),
 }
 
+fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) {
+    while json_chars[*position] == ' ' || json_chars[*position] == '\n' || json_chars[*position] == '\r' {
+        *position += 1;
+    }
+}
+
 fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashMap<String, Option<JsonValue>>, Box<dyn Error>> {
     // Char will be an open curly bracket
     *position += 1;
@@ -18,9 +24,16 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
     let mut get_key: bool = true;
     let mut get_val: bool = false;
     let mut key = "".to_string();
+    let mut done: bool = false;
 
-    while json_chars[*position] != '}' {
-        if get_key && json_chars[*position] == '"' {
+    while !done {
+        skip_white_space(json_chars, position);
+
+        if get_key {
+            if json_chars[*position] != '"' {
+                return Err("Invalid JSON".into());
+            }
+
             key = get_json_string(&json_chars, position)?;
 
             while json_chars[*position] != ':' {
@@ -33,11 +46,15 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
         } else if get_val {
             let val: Option<JsonValue> = JsonValue::new(&json_chars, position)?;
             json_obj.insert(key.clone(), val);
-            get_key = true;
             get_val = false;
             key = "".to_string();
         } else {
-            *position += 1;
+            if json_chars[*position] == ',' {
+                get_key = true;
+                *position += 1;
+            } else if json_chars[*position] == '}' {
+                done = true;
+            }
         }
     }
 
@@ -224,12 +241,6 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<bool, Box<
         return Ok(true);
     } else {
         return Err("Invalid character".into());
-    }
-}
-
-fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) {
-    while json_chars[*position] == ' ' || json_chars[*position] == '\n' || json_chars[*position] == '\r' {
-        *position += 1;
     }
 }
 
