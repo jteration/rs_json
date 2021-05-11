@@ -12,7 +12,7 @@ pub enum JsonValue {
 }
 
 fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) {
-    while json_chars[*position] == ' ' || json_chars[*position] == '\n' || json_chars[*position] == '\r' {
+    while json_chars[*position] == ' ' || json_chars[*position] == '\n' || json_chars[*position] == '\r' || json_chars[*position] == '\t' {
         *position += 1;
     }
 }
@@ -31,6 +31,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
 
         if get_key {
             if json_chars[*position] != '"' {
+                println!("json_chars[*position]: |{}|", json_chars[*position]);
                 return Err("Invalid JSON".into());
             }
 
@@ -101,7 +102,7 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
         *position += 1;
 
         if *position > json_chars.len() - 1 {
-            return Err("get_json_string: Invalid Json".into());
+            return Err("get_json_string: Invalid JSON".into());
         }
 
         token = json_chars[*position];
@@ -119,7 +120,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     let mut num: Vec<char> = vec![];
     let is_neg: bool = token == '-';
     let mut reached_dec: bool = false;
-    let mut reached_exponent: bool = false;
+    let mut has_exponent: bool = false;
     let mut exponent_negative: bool = false;
     let mut exponent: Vec<char> = vec![];
 
@@ -135,55 +136,65 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
             json_chars[*position + 1] == ' ' ||
             json_chars[*position + 1] == ',' ||
             json_chars[*position + 1] == '\n' ||
-            json_chars[*position + 1] == '\r')
+            json_chars[*position + 1] == '\r' ||
+            json_chars[*position + 1] == '\t')
         {
-            return Err("Invalid Json".into());
+            return Err("Invalid JSON".into());
         }
     }
 
     let mut done: bool = false;
 
     while !done {
-        if token.is_digit(10) || token == '.' || token == 'e' || token == 'E' || token == '-' {
-            if token == '.' && !reached_dec && !reached_exponent {
+        if token.is_digit(10) || token == '.' || token == 'e' || token == 'E' {
+            if token == '.' && !reached_dec && !has_exponent {
+                // '.' char is only valid in the initial number
                 num.push(token);
                 reached_dec = true;
-            } else if token == '.' && reached_dec && !reached_exponent {
-                return Err("Invalid Json".into());
-            } else if token == '-' && reached_exponent {
-                return Err("Invalid Json".into());
-            } else if (token == 'e' || token == 'E') && !reached_exponent {
-                reached_exponent = true;
+            } else if token == '.' && reached_dec && !has_exponent {
+                // Valid numbers only contain one '.'
+                println!("token: {}", token);
+                return Err("Invalid JSON".into());
+            } else if (token == 'e' || token == 'E') && !has_exponent {
+                has_exponent = true;
 
+                // Check for '-' or '+' after exponent
                 if json_chars[*position + 1] == '-' {
                     exponent_negative = true;
                     *position += 1;
                 } else if json_chars[*position + 1] == '+' {
                     *position += 1;
                 } else if !json_chars[*position + 1].is_digit(10) {
-                    return Err("Invalid Json".into());
+                    // If next char isn't '-' or '+' ensure its a digit
+                    println!("token: {}", token);
+                    return Err("Invalid JSON".into());
                 }
-            } else if token == '-' && reached_exponent {
-                return Err("Invalid Json".into());
-            } else if (token == 'e' || token == 'E') && reached_exponent {
-                return Err("Invalid Json".into());
-            } else if token.is_digit(10) && reached_exponent {
+            } else if (token == 'e' || token == 'E') && has_exponent {
+                // Numbers can only have one exponent char
+                
+                println!("token: {}", token);
+                return Err("Invalid JSON".into());
+            } else if token.is_digit(10) && has_exponent {
                 exponent.push(token);
-            } else {
+            } else if token.is_digit(10) {
                 num.push(token);
+            } else {
+                println!("token: {}", token);
+                return Err("Invalid JSON".into());
             }
 
             *position += 1;
             token = json_chars[*position];
-        } else if token == ' ' || token == '\n' || token == '\r' || token == ',' {
+        } else if token == ' ' || token == '\n' || token == '\r' || token == '\t' || token == ',' {
             done = true;
         } else {
-            return Err("Invalid Json".into());
+            println!("token: {}", token);
+            return Err("Invalid JSON".into());
         }
     }
 
     return Ok(
-        if reached_exponent {
+        if has_exponent {
             if exponent_negative {
                 (num.iter().collect::<String>().parse::<f64>().unwrap()) / (10.0f64.powf(exponent.iter().collect::<String>().parse::<f64>().unwrap()))
             } else {
@@ -297,11 +308,12 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
         if
             characters[position] == ' ' ||
             characters[position] == '\n' ||
-            characters[position] == '\r'
+            characters[position] == '\r' ||
+            characters[position] == '\t'
         {   
             position += 1;
         } else {
-            return Err("parse_json: Invalid Json".into());
+            return Err("parse_json: Invalid JSON".into());
         }
     }
 
