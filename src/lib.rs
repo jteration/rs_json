@@ -15,7 +15,7 @@ fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremen
     // Check if new position is past the end of the json string
     *position += num_incremented;
 
-    if *position >= json_chars.len() {
+    if *position > json_chars.len() {
         return Err("Reached end of JSON unexpectedly".into());
     }
 
@@ -72,6 +72,8 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                 increment_position(json_chars, position, 1)?;
             } else if json_chars[*position] == '}' {
                 done = true;
+            } else {
+                return Err(format!("Invalid char at position {}", position).into());
             }
         }
     }
@@ -209,11 +211,11 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
         }
     }
 
-    let parsed_num: f64 = num.iter().collect::<String>().parse::<f64>().unwrap();
+    let parsed_num: f64 = num.iter().collect::<String>().parse::<f64>()?;
 
     return Ok(
         if has_exponent {
-            let parsed_exponent: f64 = exponent.iter().collect::<String>().parse::<f64>().unwrap();
+            let parsed_exponent: f64 = exponent.iter().collect::<String>().parse::<f64>()?;
 
             if negative_exponent {
                 parsed_num / (10.0f64.powf(parsed_exponent))
