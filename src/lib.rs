@@ -22,8 +22,12 @@ fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremen
     Ok(())
 }
 
+fn is_white_space(token: char) -> bool {
+    token == ' ' || token == '\n' || token == '\r' || token == '\t'
+}
+
 fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) -> Result<(), Box<dyn Error>> {
-    while json_chars[*position] == ' ' || json_chars[*position] == '\n' || json_chars[*position] == '\r' || json_chars[*position] == '\t' {
+    while is_white_space(json_chars[*position]) {
         increment_position(json_chars, position, 1)?;
     }
 
@@ -157,11 +161,8 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     if token == '0' {
         if
             !(json_chars[*position + 1] == '.' ||
-            json_chars[*position + 1] == ' ' ||
             json_chars[*position + 1] == ',' ||
-            json_chars[*position + 1] == '\n' ||
-            json_chars[*position + 1] == '\r' ||
-            json_chars[*position + 1] == '\t')
+            is_white_space(json_chars[*position + 1]))
         {
             return Err(format!("Invalid char at position {}", position).into());
         }
@@ -204,7 +205,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 
             increment_position(json_chars, position, 1)?;
             token = json_chars[*position];
-        } else if token == ' ' || token == '\n' || token == '\r' || token == '\t' || token == ',' {
+        } else if is_white_space(token) || token == ',' {
             done = true;
         } else {
             return Err(format!("Invalid char at position {}", position).into());
@@ -336,12 +337,7 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
 
     // Ensure any characters after end of root value are just whitespace character
     while position < json_length {
-        if
-            characters[position] == ' ' ||
-            characters[position] == '\n' ||
-            characters[position] == '\r' ||
-            characters[position] == '\t'
-        {
+        if is_white_space(characters[position]) {
             position += 1;
         } else {
             return Err(format!("Invalid char at position {}", position).into());
