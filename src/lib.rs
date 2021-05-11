@@ -12,7 +12,7 @@ pub enum JsonValue {
 }
 
 fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremented: usize) -> Result<(), Box<dyn Error>> {
-    // Check if new position past the end of the json string
+    // Check if new position is past the end of the json string
     *position += num_incremented;
 
     if *position >= json_chars.len() {
@@ -139,9 +139,9 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     // Char will be a digit or '-'
     let mut token = json_chars[*position];
     let mut num: Vec<char> = vec![];
-    let mut reached_dec: bool = false;
+    let mut has_decimal: bool = false;
     let mut has_exponent: bool = false;
-    let mut exponent_negative: bool = false;
+    let mut negative_exponent: bool = false;
     let mut exponent: Vec<char> = vec![];
 
     // Check if negative
@@ -169,11 +169,11 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 
     while !done {
         if token.is_digit(10) || token == '.' || token == 'e' || token == 'E' {
-            if token == '.' && !reached_dec && !has_exponent {
+            if token == '.' && !has_decimal && !has_exponent {
                 // '.' char is only valid in the initial number
                 num.push(token);
-                reached_dec = true;
-            } else if (token == '.' && reached_dec) || (token == '.' && has_exponent) {
+                has_decimal = true;
+            } else if (token == '.' && has_decimal) || (token == '.' && has_exponent) {
                 // Valid numbers only contain one '.' and they cannot be in the exponent
                 return Err(format!("Invalid char at position {}", position).into());
             } else if (token == 'e' || token == 'E') && !has_exponent {
@@ -181,7 +181,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 
                 // Check for '-' or '+' after exponent
                 if json_chars[*position + 1] == '-' {
-                    exponent_negative = true;
+                    negative_exponent = true;
                     increment_position(json_chars, position, 1)?;
                 } else if json_chars[*position + 1] == '+' {
                     increment_position(json_chars, position, 1)?;
@@ -209,15 +209,19 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
         }
     }
 
+    let parsed_num: f64 = num.iter().collect::<String>().parse::<f64>().unwrap();
+
     return Ok(
         if has_exponent {
-            if exponent_negative {
-                (num.iter().collect::<String>().parse::<f64>().unwrap()) / (10.0f64.powf(exponent.iter().collect::<String>().parse::<f64>().unwrap()))
+            let parsed_exponent: f64 = exponent.iter().collect::<String>().parse::<f64>().unwrap();
+
+            if negative_exponent {
+                parsed_num / (10.0f64.powf(parsed_exponent))
             } else {
-                (num.iter().collect::<String>().parse::<f64>().unwrap()) * (10.0f64.powf(exponent.iter().collect::<String>().parse::<f64>().unwrap()))
+                parsed_num * (10.0f64.powf(parsed_exponent))
             }
         } else {
-            num.iter().collect::<String>().parse::<f64>().unwrap()
+            parsed_num
         }
     );
 }
