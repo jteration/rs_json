@@ -16,7 +16,7 @@ fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremen
     *position += num_incremented;
 
     if *position >= json_chars.len() {
-        return Err("Invalid JSON".into());
+        return Err("Reached end of JSON unexpectedly".into());
     }
 
     Ok(())
@@ -45,7 +45,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
 
         if get_key {
             if json_chars[*position] != '"' {
-                return Err("Invalid JSON".into());
+                return Err(format!("Invalid char at position {}", position).into());
             }
 
             key = get_json_string(json_chars, position)?;
@@ -58,7 +58,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                 get_key = false;
                 get_val = true;
             } else {
-                return Err("Invalid JSON".into());
+                return Err(format!("Invalid char at position {}", position).into());
             }
         } else if get_val {
             // JsonValue::new calls skip_white_space at the start
@@ -100,7 +100,7 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Op
         } else if json_chars[*position] == ']' {
             done = true;
         } else {
-            return Err("Invalid JSON".into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
     }
 
@@ -156,7 +156,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
             json_chars[*position + 1] == '\r' ||
             json_chars[*position + 1] == '\t')
         {
-            return Err("Invalid JSON".into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
     }
 
@@ -168,9 +168,9 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                 // '.' char is only valid in the initial number
                 num.push(token);
                 reached_dec = true;
-            } else if token == '.' && reached_dec && !has_exponent {
-                // Valid numbers only contain one '.'
-                return Err("Invalid JSON".into());
+            } else if (token == '.' && reached_dec) || (token == '.' && has_exponent) {
+                // Valid numbers only contain one '.' and they cannot be in the exponent
+                return Err(format!("Invalid char at position {}", position).into());
             } else if (token == 'e' || token == 'E') && !has_exponent {
                 has_exponent = true;
 
@@ -182,17 +182,17 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                     increment_position(json_chars, position, 1)?;
                 } else if !json_chars[*position + 1].is_digit(10) {
                     // If next char isn't '-' or '+' ensure its a digit
-                    return Err("Invalid JSON".into());
+                    return Err(format!("Invalid char at position {}", position).into());
                 }
             } else if (token == 'e' || token == 'E') && has_exponent {
                 // Numbers can only have one exponent char
-                return Err("Invalid JSON".into());
+                return Err(format!("Invalid char at position {}", position).into());
             } else if token.is_digit(10) && has_exponent {
                 exponent.push(token);
             } else if token.is_digit(10) {
                 num.push(token);
             } else {
-                return Err("Invalid JSON".into());
+                return Err(format!("Invalid char at position {}", position).into());
             }
 
             increment_position(json_chars, position, 1)?;
@@ -200,7 +200,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
         } else if token == ' ' || token == '\n' || token == '\r' || token == '\t' || token == ',' {
             done = true;
         } else {
-            return Err("Invalid JSON".into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
     }
 
@@ -222,7 +222,7 @@ fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> 
     increment_position(json_chars, position, 1)?;
     
     if t_or_f == true {
-        // Check characters are 't' 'r' 'u' 'e'
+        // Check if characters are 't' 'r' 'u' 'e'
         if 
             *position + 2 < json_chars.len() &&
             json_chars[*position] == 'r' &&
@@ -234,10 +234,10 @@ fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> 
 
             return Ok(true);
         } else {
-            return Err("Invalid JSON".into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
     } else {
-        // Check characters are 'f' 'a' 'l' 's' 'e'
+        // Check if characters are 'f' 'a' 'l' 's' 'e'
         if 
             *position + 3 < json_chars.len() &&
             json_chars[*position] == 'a' &&
@@ -250,7 +250,7 @@ fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> 
 
             return Ok(false);
         } else {
-            return Err("Invalid JSON".into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
     }
 }
@@ -259,8 +259,9 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<bool, Box<
     // Char will be 'n'
     increment_position(json_chars, position, 1)?;
 
-    // Check characters are 'n' 'u' 'l' 'l'
+    // Check if characters are 'n' 'u' 'l' 'l'
     if 
+        *position + 2 < json_chars.len() &&
         json_chars[*position] == 'u' &&
         json_chars[*position + 1] == 'l' &&
         json_chars[*position + 2] == 'l'
@@ -268,7 +269,7 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<bool, Box<
         increment_position(json_chars, position, 3)?;
         return Ok(true);
     } else {
-        return Err("Invalid character".into());
+        return Err(format!("Invalid char at position {}", position).into());
     }
 }
 
@@ -297,7 +298,7 @@ impl JsonValue {
         } else if token == '[' {
             value = Some(JsonArray(get_json_array(json_chars, position)?))
         } else {
-            return Err(format!("Invalid char at position {}: {}", position, token).into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
 
         return Ok(value);
@@ -332,7 +333,7 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
         {   
             position += 1;
         } else {
-            return Err("parse_json: Invalid JSON".into());
+            return Err(format!("Invalid char at position {}", position).into());
         }
     }
 
