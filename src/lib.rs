@@ -220,32 +220,37 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> Result<bool, Box<dyn Error>> {
     // Char will be 'f' or 't'
     increment_position(json_chars, position, 1)?;
-
-    let false_test = vec!['a', 'l', 's', 'e'];
-    let true_test = vec!['r', 'u', 'e'];
-
+    
     if t_or_f == true {
+        // Check characters are 't' 'r' 'u' 'e'
         if 
-            json_chars[*position] == true_test[0] &&
-            json_chars[*position + 1] == true_test[1] &&
-            json_chars[*position + 2] == true_test[2]
+            *position + 2 < json_chars.len() &&
+            json_chars[*position] == 'r' &&
+            json_chars[*position + 1] == 'u' &&
+            json_chars[*position + 2] == 'e'
         {
+            // Increment past 'e'
             increment_position(json_chars, position, 3)?;
+
             return Ok(true);
         } else {
-            return Err("Invalid character".into());
+            return Err("Invalid JSON".into());
         }
     } else {
+        // Check characters are 'f' 'a' 'l' 's' 'e'
         if 
-            json_chars[*position] == false_test[0] &&
-            json_chars[*position + 1] == false_test[1] &&
-            json_chars[*position + 2] == false_test[2] &&
-            json_chars[*position + 3] == false_test[3]
+            *position + 3 < json_chars.len() &&
+            json_chars[*position] == 'a' &&
+            json_chars[*position + 1] == 'l' &&
+            json_chars[*position + 2] == 's' &&
+            json_chars[*position + 3] == 'e'
         {
+            // Increment past 'e'
             increment_position(json_chars, position, 4)?;
+
             return Ok(false);
         } else {
-            return Err("Invalid character".into());
+            return Err("Invalid JSON".into());
         }
     }
 }
@@ -254,12 +259,11 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<bool, Box<
     // Char will be 'n'
     increment_position(json_chars, position, 1)?;
 
-    let null_test = vec!['u', 'l', 'l'];
-
+    // Check characters are 'n' 'u' 'l' 'l'
     if 
-        json_chars[*position] == null_test[0] &&
-        json_chars[*position + 1] == null_test[1] &&
-        json_chars[*position + 2] == null_test[2]
+        json_chars[*position] == 'u' &&
+        json_chars[*position + 1] == 'l' &&
+        json_chars[*position + 2] == 'l'
     {
         increment_position(json_chars, position, 3)?;
         return Ok(true);
