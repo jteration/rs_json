@@ -122,7 +122,7 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
         if token != '"' {
             new_string.push(token);
             increment_position(json_chars, position, 1)?;
-            
+
             token = json_chars[*position];
         } else {
             done = true;
@@ -153,7 +153,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 
     // Check for leading '0'
     if token == '0' {
-        if 
+        if
             !(json_chars[*position + 1] == '.' ||
             json_chars[*position + 1] == ' ' ||
             json_chars[*position + 1] == ',' ||
@@ -225,10 +225,10 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> Result<bool, Box<dyn Error>> {
     // Char will be 'f' or 't'
     increment_position(json_chars, position, 1)?;
-    
+
     if t_or_f == true {
         // Check if characters are 't' 'r' 'u' 'e'
-        if 
+        if
             *position + 2 < json_chars.len() &&
             json_chars[*position] == 'r' &&
             json_chars[*position + 1] == 'u' &&
@@ -243,7 +243,7 @@ fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> 
         }
     } else {
         // Check if characters are 'f' 'a' 'l' 's' 'e'
-        if 
+        if
             *position + 3 < json_chars.len() &&
             json_chars[*position] == 'a' &&
             json_chars[*position + 1] == 'l' &&
@@ -265,7 +265,7 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<bool, Box<
     increment_position(json_chars, position, 1)?;
 
     // Check if characters are 'n' 'u' 'l' 'l'
-    if 
+    if
         *position + 2 < json_chars.len() &&
         json_chars[*position] == 'u' &&
         json_chars[*position + 1] == 'l' &&
@@ -335,7 +335,7 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
             characters[position] == '\n' ||
             characters[position] == '\r' ||
             characters[position] == '\t'
-        {   
+        {
             position += 1;
         } else {
             return Err(format!("Invalid char at position {}", position).into());
