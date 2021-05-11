@@ -119,12 +119,12 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
     let mut done: bool = false;
 
     while !done {
-        new_string.push(token);
-        increment_position(json_chars, position, 1)?;
-
-        token = json_chars[*position];
-
-        if token == '"' {
+        if token != '"' {
+            new_string.push(token);
+            increment_position(json_chars, position, 1)?;
+            
+            token = json_chars[*position];
+        } else {
             done = true;
         }
     }
