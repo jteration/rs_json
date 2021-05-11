@@ -116,12 +116,17 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
 
     let mut token = json_chars[*position];
     let mut new_string: Vec<char> = vec![];
+    let mut done: bool = false;
 
-    while token != '"' {
+    while !done {
         new_string.push(token);
         increment_position(json_chars, position, 1)?;
 
         token = json_chars[*position];
+
+        if token == '"' {
+            done = true;
+        }
     }
 
     // Put position past closed double quotation
