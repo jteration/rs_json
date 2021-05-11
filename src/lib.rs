@@ -335,7 +335,7 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
     let parsed_json_string: Option<JsonValue> = JsonValue::new(&characters, &mut position)?;
 
     // Ensure any characters after end of root value are just whitespace character
-    while position < json_length - 1 {
+    while position < json_length {
         if
             characters[position] == ' ' ||
             characters[position] == '\n' ||
