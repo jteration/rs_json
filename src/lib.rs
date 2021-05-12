@@ -243,51 +243,48 @@ fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> 
 
     if t_or_f == true {
         // Check if characters are 't' 'r' 'u' 'e'
-        let should_be_r = json_chars[*position];
-        let should_be_u = get_char_at_offset(json_chars, position, 1)?;
-        let should_be_e = get_char_at_offset(json_chars, position, 2)?;
+        let true_test: Vec<char> = vec!['r', 'u', 'e'];
 
-        if should_be_r == 'r' && should_be_u == 'u' && should_be_e == 'e' {
-            // Increment past 'e'
-            increment_position(json_chars, position, 3)?;
+        for i in 0..true_test.len() {
+            if json_chars[*position] != true_test[i] {
+                return Err(format!("Invalid char at position {}", position).into());
+            }
 
-            return Ok(true);
-        } else {
-            return Err(format!("Invalid char at position {}", position).into());
+            increment_position(json_chars, position, 1)?;
         }
+
+        return Ok(true);
     } else {
         // Check if characters are 'f' 'a' 'l' 's' 'e'
-        let should_be_a = json_chars[*position];
-        let should_be_l = get_char_at_offset(json_chars, position, 1)?;
-        let should_be_s = get_char_at_offset(json_chars, position, 2)?;
-        let should_be_e = get_char_at_offset(json_chars, position, 3)?;
+        let false_test: Vec<char> = vec!['a', 'l', 's', 'e'];
 
-        if should_be_a == 'a' && should_be_l == 'l' && should_be_s == 's' && should_be_e == 'e' {
-            // Increment past 'e'
-            increment_position(json_chars, position, 4)?;
+        for i in 0..false_test.len() {
+            if json_chars[*position] != false_test[i] {
+                return Err(format!("Invalid char at position {}", position).into());
+            }
 
-            return Ok(false);
-        } else {
-            return Err(format!("Invalid char at position {}", position).into());
+            increment_position(json_chars, position, 1)?;
         }
+
+        return Ok(false);
     }
 }
 
-fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<bool, Box<dyn Error>> {
+fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<(), Box<dyn Error>> {
     // Char will be 'n'
     increment_position(json_chars, position, 1)?;
 
-    let should_be_u = json_chars[*position];
-    let should_be_l = get_char_at_offset(json_chars, position, 1)?;
-    let should_be_second_l = get_char_at_offset(json_chars, position, 2)?;
+    let null_test: Vec<char> = vec!['u', 'l', 'l'];
 
-    // Check if characters are 'n' 'u' 'l' 'l'
-    if should_be_u == 'u' && should_be_l == 'l' && should_be_second_l == 'l' {
-        increment_position(json_chars, position, 3)?;
-        return Ok(true);
-    } else {
-        return Err(format!("Invalid char at position {}", position).into());
+    for i in 0..null_test.len() {
+        if json_chars[*position] != null_test[i] {
+            return Err(format!("Invalid char at position {}", position).into());
+        }
+
+        increment_position(json_chars, position, 1)?;
     }
+
+    Ok(())
 }
 
 impl JsonValue {
