@@ -109,12 +109,16 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Op
 
         skip_white_space(json_chars, position)?;
 
-        if json_chars[*position] == ',' {
-            increment_position(json_chars, position, 1)?;
-        } else if json_chars[*position] == ']' {
-            done = true;
-        } else {
-            return Err(format!("Invalid char at position {}", position).into());
+        let token = json_chars[*position];
+
+        match token {
+            ',' => {
+                increment_position(json_chars, position, 1)?;
+            }
+            ']' => {
+                done = true;
+            }
+            _ => return Err(format!("Invalid char at position {}", position).into())
         }
     }
 
