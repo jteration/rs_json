@@ -74,7 +74,6 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                 return Err(format!("Invalid char at position {}", position).into());
             }
         } else if get_val {
-            // JsonValue::new calls skip_white_space at the start
             let val: Option<JsonValue> = JsonValue::new(&json_chars, position)?;
             json_obj.insert(key.clone(), val);
             get_val = false;
@@ -178,45 +177,56 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     let mut done: bool = false;
 
     while !done {
-        if token.is_digit(10) || token == '.' || token == 'e' || token == 'E' {
-            if token == '.' && !has_decimal && !has_exponent {
-                // '.' char is only valid in the initial number
-                num.push(token);
-                has_decimal = true;
-            } else if (token == '.' && has_decimal) || (token == '.' && has_exponent) {
-                // Valid numbers only contain one '.' and they cannot be in the exponent
-                return Err(format!("Invalid char at position {}", position).into());
-            } else if (token == 'e' || token == 'E') && !has_exponent {
-                has_exponent = true;
-                let next_char = get_char_at_offset(json_chars, position, 1)?;
+        match token {
+            '0'..='9' | '.' | 'e' | 'E' => {
+                match token {
+                    '.' => {
+                        if !has_decimal && !has_exponent {
+                            // '.' char is only valid in the initial number
+                            num.push(token);
+                            has_decimal = true;
+                        } else if has_decimal || has_exponent {
+                            // Can only have one '.' and it may not appear in the exponent
+                            return Err(format!("Invalid char at position {}", position).into());
+                        }
+                    }
+                    'e' | 'E' => {
+                        if !has_exponent {
+                            has_exponent = true;
+                            let next_char = get_char_at_offset(json_chars, position, 1)?;
 
-                // Check for '-' or '+' after exponent
-                if next_char == '-' {
-                    negative_exponent = true;
-                    increment_position(json_chars, position, 1)?;
-                } else if next_char == '+' {
-                    increment_position(json_chars, position, 1)?;
-                } else if !next_char.is_digit(10) {
-                    // If next char isn't '-' or '+' ensure its a digit
-                    return Err(format!("Invalid char at position {}", position).into());
+                            // Check for '-' or '+' after exponent
+                            if next_char == '-' {
+                                negative_exponent = true;
+                                increment_position(json_chars, position, 1)?;
+                            } else if next_char == '+' {
+                                increment_position(json_chars, position, 1)?;
+                            } else if !next_char.is_digit(10) {
+                                // If next char isn't '-' or '+' ensure its a digit
+                                return Err(format!("Invalid char at position {}", position).into());
+                            }
+                        } else {
+                            // Can only have one exponent
+                            return Err(format!("Invalid char at position {}", position).into());
+                        }
+                    }
+                    '0'..='9' => {
+                        if has_exponent {
+                            exponent.push(token);
+                        } else {
+                            num.push(token);
+                        }
+                    }
+                    _ => return Err(format!("Invalid char at position {}", position).into())
                 }
-            } else if (token == 'e' || token == 'E') && has_exponent {
-                // Numbers can only have one exponent char
-                return Err(format!("Invalid char at position {}", position).into());
-            } else if token.is_digit(10) && has_exponent {
-                exponent.push(token);
-            } else if token.is_digit(10) {
-                num.push(token);
-            } else {
-                return Err(format!("Invalid char at position {}", position).into());
-            }
 
-            increment_position(json_chars, position, 1)?;
-            token = json_chars[*position];
-        } else if is_white_space(token) || token == ',' {
-            done = true;
-        } else {
-            return Err(format!("Invalid char at position {}", position).into());
+                increment_position(json_chars, position, 1)?;
+                token = json_chars[*position];
+            },
+            tok if is_white_space(tok) || tok == ',' => {
+                done = true;
+            },
+            _ => return Err(format!("Invalid char at position {}", position).into())
         }
     }
 
