@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::error::Error;
-use std::str;
 use std::fs;
+use std::str;
 
 #[derive(Debug)]
 pub enum JsonValue {
@@ -65,24 +65,24 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                     get_val = true;
                 } else {
                     // Val is string
-                    let val: JsonValue= JsonValue::new(&json_chars, position)?;
+                    let val: JsonValue = JsonValue::new(&json_chars, position)?;
                     json_obj.insert(key.clone(), val);
                     get_val = false;
                     key = "".to_string();
                 }
-            },
+            }
             ':' => {
                 if !get_val {
                     return Err(format!("Invalid char at position {}", position).into());
                 } else {
                     increment_position(json_chars, position, 1)?;
                 }
-            },
+            }
             ',' => increment_position(json_chars, position, 1)?,
             '}' => done = true,
             _ => {
                 // JsonValue::new will check if its a valid value starter
-                let val: JsonValue= JsonValue::new(&json_chars, position)?;
+                let val: JsonValue = JsonValue::new(&json_chars, position)?;
                 json_obj.insert(key.clone(), val);
                 get_val = false;
                 key = "".to_string();
@@ -245,7 +245,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
             }
             tok if is_white_space(tok) || tok == ',' || token == '}' => {
                 done = true;
-            },
+            }
             _ => return Err(format!("Invalid char at position {}", position).into())
         }
 
@@ -257,19 +257,17 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 
     let parsed_num: f64 = num.iter().collect::<String>().parse::<f64>()?;
 
-    Ok(
-        if has_exponent {
-            let parsed_exponent: f64 = exponent.iter().collect::<String>().parse::<f64>()?;
+    Ok(if has_exponent {
+        let parsed_exponent: f64 = exponent.iter().collect::<String>().parse::<f64>()?;
 
-            if negative_exponent {
-                parsed_num / (10.0f64.powf(parsed_exponent))
-            } else {
-                parsed_num * (10.0f64.powf(parsed_exponent))
-            }
+        if negative_exponent {
+            parsed_num / (10.0f64.powf(parsed_exponent))
         } else {
-            parsed_num
+            parsed_num * (10.0f64.powf(parsed_exponent))
         }
-    )
+    } else {
+        parsed_num
+    })
 }
 
 fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> Result<bool, Box<dyn Error>> {
@@ -329,7 +327,7 @@ impl JsonValue {
         skip_white_space(json_chars, position)?;
 
         let token: char = json_chars[*position];
-        let value: JsonValue= match token {
+        let value: JsonValue = match token {
             '"' => String(get_json_string(json_chars, position)?),
             'f' => Bool(get_json_bool(json_chars, position, false)?),
             't' => Bool(get_json_bool(json_chars, position, true)?),
@@ -337,7 +335,7 @@ impl JsonValue {
             'n' => {
                 check_null(json_chars, position)?;
                 Null
-            },
+            }
             '{' => Obj(get_json_object(json_chars, position)?),
             '[' => Array(get_json_array(json_chars, position)?),
             _ => return Err(format!("Invalid char at position {}", position).into())
@@ -363,7 +361,7 @@ fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     let characters: Vec<char> = json_string.chars().collect();
     let json_length = characters.len();
     let mut position: usize = 0;
-    let root_value: JsonValue= JsonValue::new(&characters, &mut position)?;
+    let root_value: JsonValue = JsonValue::new(&characters, &mut position)?;
 
     // Ensure any characters after end of root value are just whitespace characters
     while position < json_length {
