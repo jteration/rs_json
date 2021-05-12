@@ -178,51 +178,52 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
 
     while !done {
         match token {
-            '0'..='9' | '.' | 'e' | 'E' => {
-                match token {
-                    '.' => {
-                        if !has_decimal && !has_exponent {
-                            // '.' char is only valid in the initial number
-                            num.push(token);
-                            has_decimal = true;
-                        } else if has_decimal || has_exponent {
-                            // Can only have one '.' and it may not appear in the exponent
-                            return Err(format!("Invalid char at position {}", position).into());
-                        }
-                    }
-                    'e' | 'E' => {
-                        if !has_exponent {
-                            has_exponent = true;
-                            let next_char = get_char_at_offset(json_chars, position, 1)?;
-
-                            // Check for '-' or '+' after exponent
-                            if next_char == '-' {
-                                negative_exponent = true;
-                                increment_position(json_chars, position, 1)?;
-                            } else if next_char == '+' {
-                                increment_position(json_chars, position, 1)?;
-                            } else if !next_char.is_digit(10) {
-                                // If next char isn't '-' or '+' ensure its a digit
-                                return Err(format!("Invalid char at position {}", position).into());
-                            }
-                        } else {
-                            // Can only have one exponent
-                            return Err(format!("Invalid char at position {}", position).into());
-                        }
-                    }
-                    '0'..='9' => {
-                        if has_exponent {
-                            exponent.push(token);
-                        } else {
-                            num.push(token);
-                        }
-                    }
-                    _ => return Err(format!("Invalid char at position {}", position).into())
+            '.' => {
+                if !has_decimal && !has_exponent {
+                    // '.' char is only valid in the initial number
+                    num.push(token);
+                    has_decimal = true;
+                } else if has_decimal || has_exponent {
+                    // Can only have one '.' and it may not appear in the exponent
+                    return Err(format!("Invalid char at position {}", position).into());
                 }
 
                 increment_position(json_chars, position, 1)?;
                 token = json_chars[*position];
-            },
+            }
+            'e' | 'E' => {
+                if !has_exponent {
+                    has_exponent = true;
+                    let next_char = get_char_at_offset(json_chars, position, 1)?;
+
+                    // Check for '-' or '+' after exponent
+                    if next_char == '-' {
+                        negative_exponent = true;
+                        increment_position(json_chars, position, 1)?;
+                    } else if next_char == '+' {
+                        increment_position(json_chars, position, 1)?;
+                    } else if !next_char.is_digit(10) {
+                        // If next char isn't '-' or '+' ensure its a digit
+                        return Err(format!("Invalid char at position {}", position).into());
+                    }
+                } else {
+                    // Can only have one exponent
+                    return Err(format!("Invalid char at position {}", position).into());
+                }
+
+                increment_position(json_chars, position, 1)?;
+                token = json_chars[*position];
+            }
+            '0'..='9' => {
+                if has_exponent {
+                    exponent.push(token);
+                } else {
+                    num.push(token);
+                }
+
+                increment_position(json_chars, position, 1)?;
+                token = json_chars[*position];
+            }
             tok if is_white_space(tok) || tok == ',' => {
                 done = true;
             },
