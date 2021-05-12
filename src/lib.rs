@@ -297,26 +297,19 @@ impl JsonValue {
         skip_white_space(json_chars, position)?;
 
         let token: char = json_chars[*position];
-        let value: Option<JsonValue>;
-
-        if token == '"' {
-            value = Some(JsonString(get_json_string(json_chars, position)?));
-        } else if token == 'f' {
-            value = Some(JsonBool(get_json_bool(json_chars, position, false)?));
-        } else if token == 't' {
-            value = Some(JsonBool(get_json_bool(json_chars, position, true)?));
-        } else if token.is_digit(10) || token == '-' {
-            value = Some(JsonNum(get_json_num(json_chars, position)?));
-        } else if token == 'n' {
-            check_null(json_chars, position)?;
-            value = None;
-        } else if token == '{' {
-            value = Some(JsonObj(get_json_object(json_chars, position)?))
-        } else if token == '[' {
-            value = Some(JsonArray(get_json_array(json_chars, position)?))
-        } else {
-            return Err(format!("Invalid char at position {}", position).into());
-        }
+        let value: Option<JsonValue> = match token {
+            '"' => Some(JsonString(get_json_string(json_chars, position)?)),
+            'f' => Some(JsonBool(get_json_bool(json_chars, position, false)?)),
+            't' => Some(JsonBool(get_json_bool(json_chars, position, true)?)),
+            '-' | '0'..='9' => Some(JsonNum(get_json_num(json_chars, position)?)),
+            'n' => {
+                check_null(json_chars, position)?;
+                None
+            },
+            '{' => Some(JsonObj(get_json_object(json_chars, position)?)),
+            '[' => Some(JsonArray(get_json_array(json_chars, position)?)),
+            _ => return Err(format!("Invalid char at position {}", position).into())
+        };
 
         Ok(value)
     }
@@ -338,9 +331,9 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
     let characters: Vec<char> = json_string.chars().collect();
     let json_length = characters.len();
     let mut position: usize = 0;
-    let parsed_json_string: Option<JsonValue> = JsonValue::new(&characters, &mut position)?;
+    let root_value: Option<JsonValue> = JsonValue::new(&characters, &mut position)?;
 
-    // Ensure any characters after end of root value are just whitespace character
+    // Ensure any characters after end of root value are just whitespace characters
     while position < json_length {
         if is_white_space(characters[position]) {
             position += 1;
@@ -349,5 +342,5 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
         }
     }
 
-    Ok(parsed_json_string)
+    Ok(root_value)
 }
