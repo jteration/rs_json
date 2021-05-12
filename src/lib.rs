@@ -5,11 +5,11 @@ use std::fs;
 
 #[derive(Debug)]
 pub enum JsonValue {
-    JsonObj(HashMap<String, JsonValue>),
-    JsonArray(Vec<JsonValue>),
-    JsonString(String),
-    JsonNum(f64),
-    JsonBool(bool),
+    Obj(HashMap<String, JsonValue>),
+    Array(Vec<JsonValue>),
+    String(String),
+    Num(f64),
+    Bool(bool),
     Null
 }
 
@@ -330,16 +330,16 @@ impl JsonValue {
 
         let token: char = json_chars[*position];
         let value: JsonValue= match token {
-            '"' => JsonString(get_json_string(json_chars, position)?),
-            'f' => JsonBool(get_json_bool(json_chars, position, false)?),
-            't' => JsonBool(get_json_bool(json_chars, position, true)?),
-            '-' | '0'..='9' => JsonNum(get_json_num(json_chars, position)?),
+            '"' => String(get_json_string(json_chars, position)?),
+            'f' => Bool(get_json_bool(json_chars, position, false)?),
+            't' => Bool(get_json_bool(json_chars, position, true)?),
+            '-' | '0'..='9' => Num(get_json_num(json_chars, position)?),
             'n' => {
                 check_null(json_chars, position)?;
-                JsonValue::Null
+                Null
             },
-            '{' => JsonObj(get_json_object(json_chars, position)?),
-            '[' => JsonArray(get_json_array(json_chars, position)?),
+            '{' => Obj(get_json_object(json_chars, position)?),
+            '[' => Array(get_json_array(json_chars, position)?),
             _ => return Err(format!("Invalid char at position {}", position).into())
         };
 
