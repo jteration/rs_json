@@ -187,9 +187,6 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                     // Can only have one '.' and it may not appear in the exponent
                     return Err(format!("Invalid char at position {}", position).into());
                 }
-
-                increment_position(json_chars, position, 1)?;
-                token = json_chars[*position];
             }
             'e' | 'E' => {
                 if !has_exponent {
@@ -210,9 +207,6 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                     // Can only have one exponent
                     return Err(format!("Invalid char at position {}", position).into());
                 }
-
-                increment_position(json_chars, position, 1)?;
-                token = json_chars[*position];
             }
             '0'..='9' => {
                 if has_exponent {
@@ -220,14 +214,16 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                 } else {
                     num.push(token);
                 }
-
-                increment_position(json_chars, position, 1)?;
-                token = json_chars[*position];
             }
             tok if is_white_space(tok) || tok == ',' => {
                 done = true;
             },
             _ => return Err(format!("Invalid char at position {}", position).into())
+        }
+
+        if !done {
+            increment_position(json_chars, position, 1)?;
+            token = json_chars[*position];
         }
     }
 
