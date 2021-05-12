@@ -5,12 +5,12 @@ use std::str;
 
 #[derive(Debug)]
 pub enum JsonValue {
-    Obj(HashMap<String, JsonValue>),
-    Array(Vec<JsonValue>),
-    String(String),
-    Num(f64),
-    Bool(bool),
-    Null
+    JObj(HashMap<String, JsonValue>),
+    JArray(Vec<JsonValue>),
+    JString(String),
+    JNum(f64),
+    JBool(bool),
+    JNull
 }
 
 fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremented: usize) -> Result<(), Box<dyn Error>> {
@@ -328,16 +328,16 @@ impl JsonValue {
 
         let token: char = json_chars[*position];
         let value: JsonValue = match token {
-            '"' => String(get_json_string(json_chars, position)?),
-            'f' => Bool(get_json_bool(json_chars, position, false)?),
-            't' => Bool(get_json_bool(json_chars, position, true)?),
-            '-' | '0'..='9' => Num(get_json_num(json_chars, position)?),
+            '"' => JString(get_json_string(json_chars, position)?),
+            'f' => JBool(get_json_bool(json_chars, position, false)?),
+            't' => JBool(get_json_bool(json_chars, position, true)?),
+            '-' | '0'..='9' => JNum(get_json_num(json_chars, position)?),
             'n' => {
                 check_null(json_chars, position)?;
-                Null
+                JNull
             }
-            '{' => Obj(get_json_object(json_chars, position)?),
-            '[' => Array(get_json_array(json_chars, position)?),
+            '{' => JObj(get_json_object(json_chars, position)?),
+            '[' => JArray(get_json_array(json_chars, position)?),
             _ => return Err(format!("Invalid char at position {}", position).into())
         };
 
