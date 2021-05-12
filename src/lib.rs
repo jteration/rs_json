@@ -5,11 +5,12 @@ use std::fs;
 
 #[derive(Debug)]
 pub enum JsonValue {
-    JsonObj(HashMap<String, Option<JsonValue>>),
-    JsonArray(Vec<Option<JsonValue>>),
+    JsonObj(HashMap<String, JsonValue>),
+    JsonArray(Vec<JsonValue>),
     JsonString(String),
     JsonNum(f64),
     JsonBool(bool),
+    Null
 }
 
 fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremented: usize) -> Result<(), Box<dyn Error>> {
@@ -44,10 +45,10 @@ fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) -> Result<(), 
     Ok(())
 }
 
-fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashMap<String, Option<JsonValue>>, Box<dyn Error>> {
+fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashMap<String, JsonValue>, Box<dyn Error>> {
     // Char will be an open curly bracket
     increment_position(json_chars, position, 1)?;
-    let mut json_obj: HashMap<String, Option<JsonValue>> = HashMap::new();
+    let mut json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut get_val: bool = false;
     let mut key = "".to_string();
     let mut done: bool = false;
@@ -64,7 +65,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                     get_val = true;
                 } else {
                     // Val is string
-                    let val: Option<JsonValue> = JsonValue::new(&json_chars, position)?;
+                    let val: JsonValue= JsonValue::new(&json_chars, position)?;
                     json_obj.insert(key.clone(), val);
                     get_val = false;
                     key = "".to_string();
@@ -81,7 +82,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
             '}' => done = true,
             _ => {
                 // JsonValue::new will check if its a valid value starter
-                let val: Option<JsonValue> = JsonValue::new(&json_chars, position)?;
+                let val: JsonValue= JsonValue::new(&json_chars, position)?;
                 json_obj.insert(key.clone(), val);
                 get_val = false;
                 key = "".to_string();
@@ -95,11 +96,11 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
     Ok(json_obj)
 }
 
-fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Option<JsonValue>>, Box<dyn Error>> {
+fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<JsonValue>, Box<dyn Error>> {
     // Char will be an open square bracket
     increment_position(json_chars, position, 1)?;
 
-    let mut json_arr: Vec<Option<JsonValue>> = vec![];
+    let mut json_arr: Vec<JsonValue> = vec![];
     let mut done: bool = false;
 
     while !done {
@@ -322,23 +323,23 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<(), Box<dy
 }
 
 impl JsonValue {
-    fn new(json_chars: &Vec<char>, position: &mut usize) -> Result<Option<JsonValue>, Box<dyn Error>> {
+    fn new(json_chars: &Vec<char>, position: &mut usize) -> Result<JsonValue, Box<dyn Error>> {
         use crate::JsonValue::*;
 
         skip_white_space(json_chars, position)?;
 
         let token: char = json_chars[*position];
-        let value: Option<JsonValue> = match token {
-            '"' => Some(JsonString(get_json_string(json_chars, position)?)),
-            'f' => Some(JsonBool(get_json_bool(json_chars, position, false)?)),
-            't' => Some(JsonBool(get_json_bool(json_chars, position, true)?)),
-            '-' | '0'..='9' => Some(JsonNum(get_json_num(json_chars, position)?)),
+        let value: JsonValue= match token {
+            '"' => JsonString(get_json_string(json_chars, position)?),
+            'f' => JsonBool(get_json_bool(json_chars, position, false)?),
+            't' => JsonBool(get_json_bool(json_chars, position, true)?),
+            '-' | '0'..='9' => JsonNum(get_json_num(json_chars, position)?),
             'n' => {
                 check_null(json_chars, position)?;
-                None
+                JsonValue::Null
             },
-            '{' => Some(JsonObj(get_json_object(json_chars, position)?)),
-            '[' => Some(JsonArray(get_json_array(json_chars, position)?)),
+            '{' => JsonObj(get_json_object(json_chars, position)?),
+            '[' => JsonArray(get_json_array(json_chars, position)?),
             _ => return Err(format!("Invalid char at position {}", position).into())
         };
 
@@ -346,7 +347,7 @@ impl JsonValue {
     }
 }
 
-pub fn run(args: &[String]) -> Result<Option<JsonValue>, Box<dyn Error>> {
+pub fn run(args: &[String]) -> Result<JsonValue, Box<dyn Error>> {
     let path_to_file = &args[1];
     let json_string = fs::read_to_string(path_to_file)?;
     let parsed_json = parse_json(json_string)?;
@@ -354,7 +355,7 @@ pub fn run(args: &[String]) -> Result<Option<JsonValue>, Box<dyn Error>> {
     Ok(parsed_json)
 }
 
-fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> {
+fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     if json_string.len() == 0 {
         return Err("Zero length JSON string".into());
     }
@@ -362,7 +363,7 @@ fn parse_json(json_string: String) -> Result<Option<JsonValue>, Box<dyn Error>> 
     let characters: Vec<char> = json_string.chars().collect();
     let json_length = characters.len();
     let mut position: usize = 0;
-    let root_value: Option<JsonValue> = JsonValue::new(&characters, &mut position)?;
+    let root_value: JsonValue= JsonValue::new(&characters, &mut position)?;
 
     // Ensure any characters after end of root value are just whitespace characters
     while position < json_length {

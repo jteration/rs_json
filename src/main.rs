@@ -8,7 +8,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
     let start = SystemTime::now();
-    let json_value: Result<Option<JsonValue>, Box<dyn Error>> = run(&args);
+    let json_value: Result<JsonValue, Box<dyn Error>> = run(&args);
     let end = SystemTime::now();
 
     let since_the_epoch_start = start
@@ -25,7 +25,7 @@ fn main() {
     let in_ms_end = since_the_epoch_end.as_secs() * 1000 +
         since_the_epoch_end.subsec_nanos() as u64 / 1_000_000;
 
-
+    println!("Elapsed: {:?}", json_value);
     println!("Start: {:?}, End: {:?}", in_ms_start, in_ms_end);
     println!("Elapsed: {:?}", in_ms_end - in_ms_start);
 }
