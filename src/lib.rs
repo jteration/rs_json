@@ -25,7 +25,7 @@ fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremen
 }
 
 fn get_char_at_offset(json_chars: &Vec<char>, position: &mut usize, offset: usize) -> Result<char, Box<dyn Error>> {
-    // Check if new position is past the end of the json string
+    // Check if char is past the end of the json string
     if *position + offset > json_chars.len() - 1 {
         return Err("Reached end of JSON unexpectedly".into());
     }
