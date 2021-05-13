@@ -10,8 +10,8 @@ mod tests {
     let good_number_one: JsonValue = run(&args1).unwrap();
 
     match good_number_one {
-      JsonValue::JNum(val) => assert_eq!(12345.0f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(12345.0f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -22,8 +22,8 @@ mod tests {
     let good_number_two: JsonValue = run(&args1).unwrap();
 
     match good_number_two {
-      JsonValue::JNum(val) => assert_eq!(-12345.0f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(-12345.0f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -34,8 +34,8 @@ mod tests {
     let good_number_three: JsonValue = run(&args1).unwrap();
 
     match good_number_three {
-      JsonValue::JNum(val) => assert_eq!(12345.123f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(12345.123f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -46,8 +46,8 @@ mod tests {
     let good_number_four: JsonValue = run(&args1).unwrap();
 
     match good_number_four {
-      JsonValue::JNum(val) => assert_eq!(-12345.123f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(-12345.123f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -58,8 +58,8 @@ mod tests {
     let good_number_five: JsonValue = run(&args1).unwrap();
 
     match good_number_five {
-      JsonValue::JNum(val) => assert_eq!(123400f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(123400f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -70,8 +70,8 @@ mod tests {
     let good_number_six: JsonValue = run(&args1).unwrap();
 
     match good_number_six {
-      JsonValue::JNum(val) => assert_eq!(-123400.0f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(-123400.0f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -82,8 +82,8 @@ mod tests {
     let good_number_seven: JsonValue = run(&args1).unwrap();
 
     match good_number_seven {
-      JsonValue::JNum(val) => assert_eq!(123412.3f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(123412.3f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -94,8 +94,8 @@ mod tests {
     let good_number_eight: JsonValue = run(&args1).unwrap();
 
     match good_number_eight {
-      JsonValue::JNum(val) => assert_eq!(-123412.3f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(-123412.3f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -106,8 +106,8 @@ mod tests {
     let good_number_nine: JsonValue = run(&args1).unwrap();
 
     match good_number_nine {
-      JsonValue::JNum(val) => assert_eq!(12.341230000000001f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(12.341230000000001f64, val),
+      _ => assert!(false),
     }
   }
 
@@ -118,8 +118,8 @@ mod tests {
     let good_number_ten: JsonValue = run(&args1).unwrap();
 
     match good_number_ten {
-      JsonValue::JNum(val) => assert_eq!(-12.341230000000001f64 ,val),
-      _ => assert!(false)
+      JsonValue::JNum(val) => assert_eq!(-12.341230000000001f64, val),
+      _ => assert!(false),
     }
   }
 }

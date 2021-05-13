@@ -10,7 +10,7 @@ pub enum JsonValue {
     JString(String),
     JNum(f64),
     JBool(bool),
-    JNull
+    JNull,
 }
 
 fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremented: usize) -> Result<(), Box<dyn Error>> {
@@ -111,7 +111,7 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Js
         match token {
             ',' => increment_position(json_chars, position, 1)?,
             ']' => done = true,
-            _ => json_arr.push(JsonValue::new(&json_chars, position)?)
+            _ => json_arr.push(JsonValue::new(&json_chars, position)?),
         }
     }
 
@@ -156,7 +156,7 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
 
                     increment_position(json_chars, position, 4)?;
                 }
-                _ => return Err(format!("Invalid char at position {}", position).into())
+                _ => return Err(format!("Invalid char at position {}", position).into()),
             }
 
             increment_position(json_chars, position, 2)?;
@@ -245,7 +245,7 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
                 done = true;
             }
-            _ => return Err(format!("Invalid char at position {}", position).into())
+            _ => return Err(format!("Invalid char at position {}", position).into()),
         }
 
         if !done {
@@ -340,7 +340,7 @@ impl JsonValue {
             }
             '{' => JObj(get_json_object(json_chars, position)?),
             '[' => JArray(get_json_array(json_chars, position)?),
-            _ => return Err(format!("Invalid char at position {}", position).into())
+            _ => return Err(format!("Invalid char at position {}", position).into()),
         };
 
         Ok(value)

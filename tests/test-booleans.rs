@@ -11,7 +11,7 @@ mod tests {
 
     match good_boolean_one {
       JsonValue::JBool(val) => assert_eq!(true, val),
-      _ => assert!(false)
+      _ => assert!(false),
     }
   }
 
@@ -23,7 +23,7 @@ mod tests {
 
     match good_boolean_two {
       JsonValue::JBool(val) => assert_eq!(false, val),
-      _ => assert!(false)
+      _ => assert!(false),
     }
   }
 }

@@ -11,7 +11,7 @@ mod tests {
 
     match good_null {
       JsonValue::JNull => assert!(true),
-      _ => assert!(false)
+      _ => assert!(false),
     }
   }
 }
