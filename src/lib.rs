@@ -48,6 +48,7 @@ fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) -> Result<(), 
 fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashMap<String, JsonValue>, Box<dyn Error>> {
     // Char will be an open curly bracket
     increment_position(json_chars, position, 1)?;
+
     let mut json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut get_val: bool = false;
     let mut key = "".to_string();
@@ -79,7 +80,12 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                 }
             }
             ',' => increment_position(json_chars, position, 1)?,
-            '}' => done = true,
+            '}' => {
+                done = true;
+
+                // Put position past closing curly bracket
+                increment_position(json_chars, position, 1)?;
+            },
             _ => {
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(&json_chars, position)?;
@@ -89,9 +95,6 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
             }
         }
     }
-
-    // Put position past closing curly bracket
-    increment_position(json_chars, position, 1)?;
 
     Ok(json_obj)
 }
@@ -110,13 +113,15 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Js
 
         match token {
             ',' => increment_position(json_chars, position, 1)?,
-            ']' => done = true,
+            ']' => {
+                done = true;
+
+                // Put position past closing square bracket
+                increment_position(json_chars, position, 1)?;
+            },
             _ => json_arr.push(JsonValue::new(&json_chars, position)?),
         }
     }
-
-    // Put position past closing square bracket
-    increment_position(json_chars, position, 1)?;
 
     Ok(json_arr)
 }
@@ -165,11 +170,11 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
             increment_position(json_chars, position, 1)?;
         } else {
             done = true;
+
+            // Put position past closed double quotation
+            increment_position(json_chars, position, 1)?;
         }
     }
-
-    // Put position past closed double quotation
-    increment_position(json_chars, position, 1)?;
 
     Ok(String::from_utf16(&new_string)?)
 }
