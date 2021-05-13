@@ -356,9 +356,8 @@ impl JsonValue {
     }
 }
 
-pub fn run(args: &[String]) -> Result<JsonValue, Box<dyn Error>> {
-    let path_to_file = &args[1];
-    let json_string = fs::read_to_string(path_to_file)?;
+pub fn run(path: &String) -> Result<JsonValue, Box<dyn Error>> {
+    let json_string = fs::read_to_string(path)?;
     let parsed_json = parse_json(json_string)?;
 
     Ok(parsed_json)

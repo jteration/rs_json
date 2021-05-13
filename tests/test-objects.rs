@@ -5,9 +5,8 @@ mod tests {
 
   #[test]
   fn test_good_object_1() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/objects/test-1.json".to_string()];
-    let good_object_one: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/objects/test-1.json".to_string();
+    let good_object_one: JsonValue = run(&path).unwrap();
 
     match good_object_one {
       JsonValue::JObj(val) => assert_eq!(val.is_empty(), true),
@@ -17,9 +16,8 @@ mod tests {
 
   #[test]
   fn test_good_object_2() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/objects/test-2.json".to_string()];
-    let good_object_two: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/objects/test-2.json".to_string();
+    let good_object_two: JsonValue = run(&path).unwrap();
 
     match good_object_two {
       JsonValue::JObj(val) => {
@@ -36,9 +34,8 @@ mod tests {
 
   #[test]
   fn test_good_object_3() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/objects/test-3.json".to_string()];
-    let good_object_three: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/objects/test-3.json".to_string();
+    let good_object_three: JsonValue = run(&path).unwrap();
 
     match good_object_three {
       JsonValue::JObj(val) => {
@@ -73,9 +70,8 @@ mod tests {
 
   #[test]
   fn test_good_object_4() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/objects/test-4.json".to_string()];
-    let good_object_four: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/objects/test-4.json".to_string();
+    let good_object_four: JsonValue = run(&path).unwrap();
 
     match good_object_four {
       JsonValue::JObj(val) => {

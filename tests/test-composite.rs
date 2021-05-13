@@ -5,9 +5,8 @@ mod tests {
 
   #[test]
   fn test_good_composite_1() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/composite/test-1.json".to_string()];
-    let good_composite_one: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/composite/test-1.json".to_string();
+    let good_composite_one: JsonValue = run(&path).unwrap();
 
     match good_composite_one {
       JsonValue::JObj(val) => {
@@ -106,9 +105,8 @@ mod tests {
 
   #[test]
   fn test_good_composite_2() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/composite/test-2.json".to_string()];
-    let good_composite_two: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/composite/test-2.json".to_string();
+    let good_composite_two: JsonValue = run(&path).unwrap();
 
     match good_composite_two {
       JsonValue::JArray(val) => {

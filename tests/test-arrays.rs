@@ -5,9 +5,8 @@ mod tests {
 
   #[test]
   fn test_good_array_1() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/arrays/test-1.json".to_string()];
-    let good_array_one: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/arrays/test-1.json".to_string();
+    let good_array_one: JsonValue = run(&path).unwrap();
 
     match good_array_one {
       JsonValue::JArray(val) => assert_eq!(0, val.len()),
@@ -17,9 +16,8 @@ mod tests {
 
   #[test]
   fn test_good_array_2() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/arrays/test-2.json".to_string()];
-    let good_array_two: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/arrays/test-2.json".to_string();
+    let good_array_two: JsonValue = run(&path).unwrap();
 
     match good_array_two {
       JsonValue::JArray(val) => {
@@ -36,9 +34,8 @@ mod tests {
 
   #[test]
   fn test_good_array_3() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/arrays/test-3.json".to_string()];
-    let good_array_three: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/arrays/test-3.json".to_string();
+    let good_array_three: JsonValue = run(&path).unwrap();
 
     match good_array_three {
       JsonValue::JArray(val) => {
@@ -60,9 +57,8 @@ mod tests {
 
   #[test]
   fn test_good_array_4() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/arrays/test-4.json".to_string()];
-    let good_array_four: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/arrays/test-4.json".to_string();
+    let good_array_four: JsonValue = run(&path).unwrap();
 
     match good_array_four {
       JsonValue::JArray(val) => {
@@ -99,9 +95,8 @@ mod tests {
 
   #[test]
   fn test_good_array_5() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/arrays/test-5.json".to_string()];
-    let good_array_five: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/arrays/test-5.json".to_string();
+    let good_array_five: JsonValue = run(&path).unwrap();
 
     match good_array_five {
       JsonValue::JArray(val) => {
@@ -118,9 +113,8 @@ mod tests {
 
   #[test]
   fn test_good_array_6() {
-    let empt = "".to_string();
-    let args1: Vec<String> = vec![empt, "./tests/good_json/arrays/test-6.json".to_string()];
-    let good_array_six: JsonValue = run(&args1).unwrap();
+    let path = "./tests/good_json/arrays/test-6.json".to_string();
+    let good_array_six: JsonValue = run(&path).unwrap();
 
     match good_array_six {
       JsonValue::JArray(root_array) => {

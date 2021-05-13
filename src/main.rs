@@ -7,8 +7,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn main() {
     let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
+    let path = &args[1];
     let start = SystemTime::now();
-    let json_value: Result<JsonValue, Box<dyn Error>> = run(&args);
+    let json_value: Result<JsonValue, Box<dyn Error>> = run(path);
     let end = SystemTime::now();
 
     let since_the_epoch_start = start.duration_since(UNIX_EPOCH).expect("Time went backwards");
