@@ -136,43 +136,47 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
     while !done {
         let token = json_chars[*position];
 
-        if token == '\\' {
-            let escaped_char = get_char_at_offset(json_chars, position, 1)?;
+        match token {
+            '\\' => {
+                let escaped_char = get_char_at_offset(json_chars, position, 1)?;
 
-            match escaped_char {
-                'b' => new_string.push(0008 as u16),
-                'f' => new_string.push(0012 as u16),
-                'n' => new_string.push(0010 as u16),
-                'r' => new_string.push(0013 as u16),
-                't' => new_string.push(0009 as u16),
-                '"' => new_string.push(0034 as u16),
-                '\\' => new_string.push(0092 as u16),
-                'u' => {
-                    let first_byte = get_char_at_offset(json_chars, position, 2)? as u8;
-                    let second_byte = get_char_at_offset(json_chars, position, 3)? as u8;
-                    let third_byte = get_char_at_offset(json_chars, position, 4)? as u8;
-                    let fourth_byte = get_char_at_offset(json_chars, position, 5)? as u8;
-
-                    let bytes = [first_byte, second_byte, third_byte, fourth_byte];
-
-                    let from_hex: &str = str::from_utf8(&bytes)?;
-                    let as_u16 = u16::from_str_radix(&from_hex, 16)?;
-                    new_string.push(as_u16);
-
-                    increment_position(json_chars, position, 4)?;
+                match escaped_char {
+                    'b' => new_string.push(0008 as u16),
+                    'f' => new_string.push(0012 as u16),
+                    'n' => new_string.push(0010 as u16),
+                    'r' => new_string.push(0013 as u16),
+                    't' => new_string.push(0009 as u16),
+                    '"' => new_string.push(0034 as u16),
+                    '\\' => new_string.push(0092 as u16),
+                    'u' => {
+                        let first_byte = get_char_at_offset(json_chars, position, 2)? as u8;
+                        let second_byte = get_char_at_offset(json_chars, position, 3)? as u8;
+                        let third_byte = get_char_at_offset(json_chars, position, 4)? as u8;
+                        let fourth_byte = get_char_at_offset(json_chars, position, 5)? as u8;
+    
+                        let bytes = [first_byte, second_byte, third_byte, fourth_byte];
+    
+                        let from_hex: &str = str::from_utf8(&bytes)?;
+                        let as_u16 = u16::from_str_radix(&from_hex, 16)?;
+                        new_string.push(as_u16);
+    
+                        increment_position(json_chars, position, 4)?;
+                    }
+                    _ => return Err(format!("Invalid char at position {}", position).into()),
                 }
-                _ => return Err(format!("Invalid char at position {}", position).into()),
+    
+                increment_position(json_chars, position, 2)?;
+            },
+            '"' => {
+                done = true;
+
+                // Put position past closed double quotation
+                increment_position(json_chars, position, 1)?;
+            },
+            _ => {
+                new_string.push(token as u16);
+                increment_position(json_chars, position, 1)?;
             }
-
-            increment_position(json_chars, position, 2)?;
-        } else if token != '"' {
-            new_string.push(token as u16);
-            increment_position(json_chars, position, 1)?;
-        } else {
-            done = true;
-
-            // Put position past closed double quotation
-            increment_position(json_chars, position, 1)?;
         }
     }
 
