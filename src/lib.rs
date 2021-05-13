@@ -148,12 +148,12 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
                 '"' => new_string.push(0034 as u16),
                 '\\' => new_string.push(0092 as u16),
                 'u' => {
-                    let first_digit = get_char_at_offset(json_chars, position, 2)? as u8;
-                    let second_digit = get_char_at_offset(json_chars, position, 3)? as u8;
-                    let third_digit = get_char_at_offset(json_chars, position, 4)? as u8;
-                    let fourth_digit = get_char_at_offset(json_chars, position, 5)? as u8;
+                    let first_byte = get_char_at_offset(json_chars, position, 2)? as u8;
+                    let second_byte = get_char_at_offset(json_chars, position, 3)? as u8;
+                    let third_byte = get_char_at_offset(json_chars, position, 4)? as u8;
+                    let fourth_byte = get_char_at_offset(json_chars, position, 5)? as u8;
 
-                    let bytes = [first_digit, second_digit, third_digit, fourth_digit];
+                    let bytes = [first_byte, second_byte, third_byte, fourth_byte];
 
                     let from_hex: &str = str::from_utf8(&bytes)?;
                     let as_u16 = u16::from_str_radix(&from_hex, 16)?;
