@@ -243,7 +243,6 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                 }
             }
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
-                println!("done");
                 done = true;
             }
             _ => return Err(format!("Invalid char at position {}", position).into())
