@@ -125,11 +125,12 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
     // Char will be an open double quotation
     increment_position(json_chars, position, 1)?;
 
-    let mut token = json_chars[*position];
     let mut new_string: Vec<u16> = vec![];
     let mut done: bool = false;
 
     while !done {
+        let token = json_chars[*position];
+
         if token == '\\' {
             let escaped_char = get_char_at_offset(json_chars, position, 1)?;
 
@@ -159,13 +160,9 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
             }
 
             increment_position(json_chars, position, 2)?;
-
-            token = json_chars[*position];
         } else if token != '"' {
             new_string.push(token as u16);
             increment_position(json_chars, position, 1)?;
-
-            token = json_chars[*position];
         } else {
             done = true;
         }
@@ -205,6 +202,8 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     let mut done: bool = false;
 
     while !done {
+        token = json_chars[*position];
+
         match token {
             '.' => {
                 if !has_decimal && !has_exponent {
@@ -244,14 +243,18 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                 }
             }
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
+                println!("done");
                 done = true;
             }
             _ => return Err(format!("Invalid char at position {}", position).into())
         }
 
         if !done {
+            if *position + 1 == json_chars.len() {
+                done = true;
+            }
+
             increment_position(json_chars, position, 1)?;
-            token = json_chars[*position];
         }
     }
 
