@@ -220,6 +220,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     let mut has_decimal: bool = false;
     let mut has_exponent: bool = false;
     let mut negative_exponent: bool = false;
+    let mut expecting_num: bool = true;
     let mut exponent: Vec<char> = vec![];
 
     // Check if negative
@@ -232,8 +233,9 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     // Check for leading '0'
     if token == '0' {
         let next_char = get_char_at_offset(json_args, 1)?;
+        expecting_num = false;
 
-        if !(next_char == '.' || next_char == ',' || is_white_space(next_char)) {
+        if next_char.is_digit(10) {
             return Err(format!("Invalid char at position {}", json_args.position).into());
         }
     }
@@ -245,16 +247,25 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
 
         match token {
             '.' => {
+                if expecting_num {
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
+                }
+
                 if !has_decimal && !has_exponent {
                     // '.' char is only valid in the initial number
                     new_num.push(token);
                     has_decimal = true;
+                    expecting_num = true;
                 } else if has_decimal || has_exponent {
                     // Can only have one '.' and it may not appear in the exponent
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
             }
             'e' | 'E' => {
+                if expecting_num {
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
+                }
+
                 if !has_exponent {
                     has_exponent = true;
                     let next_char = get_char_at_offset(json_args, 1)?;
@@ -265,10 +276,9 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
                         increment_position(json_args, 1)?;
                     } else if next_char == '+' {
                         increment_position(json_args, 1)?;
-                    } else if !next_char.is_digit(10) {
-                        // If next char isn't '-' or '+' ensure its a digit
-                        return Err(format!("Invalid char at position {}", json_args.position).into());
                     }
+
+                    expecting_num = true;
                 } else {
                     // Can only have one exponent
                     return Err(format!("Invalid char at position {}", json_args.position).into());
@@ -280,8 +290,14 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
                 } else {
                     new_num.push(token);
                 }
+
+                expecting_num = false;
             }
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
+                if expecting_num {
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
+                }
+
                 done = true;
             }
             _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
