@@ -200,7 +200,6 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
             }
             '"' => {
                 done = true;
-
                 // Put position past closed double quotation
                 increment_position(json_args, 1)?;
             }
