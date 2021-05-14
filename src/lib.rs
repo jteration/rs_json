@@ -320,7 +320,7 @@ fn get_json_bool(json_args: &mut JsonArgs, t_or_f: bool) -> Result<bool, Box<dyn
         // Check if characters are 't' 'r' 'u' 'e'
         let true_test: Vec<char> = vec!['r', 'u', 'e'];
 
-        for i in 0..true_test.len() {
+        for i in 0..3 {
             if json_args.chars[*json_args.position] != true_test[i] {
                 return Err(format!("Invalid char at position {}", json_args.position).into());
             }
@@ -333,7 +333,7 @@ fn get_json_bool(json_args: &mut JsonArgs, t_or_f: bool) -> Result<bool, Box<dyn
         // Check if characters are 'f' 'a' 'l' 's' 'e'
         let false_test: Vec<char> = vec!['a', 'l', 's', 'e'];
 
-        for i in 0..false_test.len() {
+        for i in 0..4 {
             if json_args.chars[*json_args.position] != false_test[i] {
                 return Err(format!("Invalid char at position {}", json_args.position).into());
             }
@@ -351,7 +351,7 @@ fn check_null(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
 
     let null_test: Vec<char> = vec!['u', 'l', 'l'];
 
-    for i in 0..null_test.len() {
+    for i in 0..3 {
         if json_args.chars[*json_args.position] != null_test[i] {
             return Err(format!("Invalid char at position {}", json_args.position).into());
         }
