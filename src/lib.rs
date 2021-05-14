@@ -100,7 +100,6 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 }
 
                 done = true;
-
                 // Put position past closing curly bracket
                 increment_position(json_args, 1)?;
             }
@@ -143,7 +142,6 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
                 }
 
                 done = true;
-
                 // Put position past closing square bracket
                 increment_position(json_args, 1)?;
             }
