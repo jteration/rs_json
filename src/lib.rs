@@ -386,13 +386,6 @@ impl JsonValue {
     }
 }
 
-pub fn run(path: &String) -> Result<JsonValue, Box<dyn Error>> {
-    let json_string = fs::read_to_string(path)?;
-    let parsed_json = parse_json(json_string)?;
-
-    Ok(parsed_json)
-}
-
 fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     if json_string.len() == 0 {
         return Err("Zero length JSON string".into());
@@ -420,4 +413,11 @@ fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     }
 
     Ok(root_value)
+}
+
+pub fn run(path: &String) -> Result<JsonValue, Box<dyn Error>> {
+    let json_string = fs::read_to_string(path)?;
+    let parsed_json = parse_json(json_string)?;
+
+    Ok(parsed_json)
 }
