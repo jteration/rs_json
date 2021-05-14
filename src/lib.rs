@@ -247,42 +247,32 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
 
         match token {
             '.' => {
-                if expecting_num {
+                if expecting_num || has_decimal || has_exponent {
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
 
-                if !has_decimal && !has_exponent {
-                    // '.' char is only valid in the initial number
-                    new_num.push(token);
-                    has_decimal = true;
-                    expecting_num = true;
-                } else if has_decimal || has_exponent {
-                    // Can only have one '.' and it may not appear in the exponent
-                    return Err(format!("Invalid char at position {}", json_args.position).into());
-                }
+                // '.' char is only valid in the initial number
+                new_num.push(token);
+                has_decimal = true;
+                expecting_num = true;
             }
             'e' | 'E' => {
-                if expecting_num {
+                if expecting_num || has_exponent {
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
 
-                if !has_exponent {
-                    has_exponent = true;
-                    let next_char = get_char_at_offset(json_args, 1)?;
+                let next_char = get_char_at_offset(json_args, 1)?;
 
-                    // Check for '-' or '+' after exponent
-                    if next_char == '-' {
-                        negative_exponent = true;
-                        increment_position(json_args, 1)?;
-                    } else if next_char == '+' {
-                        increment_position(json_args, 1)?;
-                    }
-
-                    expecting_num = true;
-                } else {
-                    // Can only have one exponent
-                    return Err(format!("Invalid char at position {}", json_args.position).into());
+                // Check for '-' or '+' after exponent
+                if next_char == '-' {
+                    negative_exponent = true;
+                    increment_position(json_args, 1)?;
+                } else if next_char == '+' {
+                    increment_position(json_args, 1)?;
                 }
+
+                has_exponent = true;
+                expecting_num = true;
             }
             '0'..='9' => {
                 if has_exponent {
