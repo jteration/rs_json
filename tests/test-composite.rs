@@ -9,8 +9,8 @@ mod tests {
     let good_composite_one: JsonValue = run(&path).unwrap();
 
     match good_composite_one {
-      JsonValue::JObj(val) => {
-        let image_obj = val.get("Image").unwrap();
+      JsonValue::JObj(good_composite_one_val) => {
+        let image_obj = good_composite_one_val.get("Image").unwrap();
 
         match image_obj {
           JsonValue::JObj(image_obj_val) => {
@@ -22,17 +22,17 @@ mod tests {
             let ids_array = image_obj_val.get("IDs").unwrap();
 
             match width {
-              JsonValue::JNum(val) => assert_eq!(*val, 800.0f64),
+              JsonValue::JNum(width_val) => assert_eq!(*width_val, 800.0f64),
               _ => assert!(false),
             };
 
             match height {
-              JsonValue::JNum(val) => assert_eq!(*val, 600.0f64),
+              JsonValue::JNum(height_val) => assert_eq!(*height_val, 600.0f64),
               _ => assert!(false),
             };
 
             match title {
-              JsonValue::JString(val) => assert_eq!(*val, "View from 15th Floor".to_string()),
+              JsonValue::JString(title_val) => assert_eq!(*title_val, "View from 15th Floor".to_string()),
               _ => assert!(false),
             };
 
@@ -43,16 +43,17 @@ mod tests {
                 let thumbnail_width = thumbnail_obj_val.get("Width").unwrap();
 
                 match url {
-                  JsonValue::JString(val) => assert_eq!(*val, "http://www.example.com/image/481989943".to_string()),
+                  JsonValue::JString(url_val) => assert_eq!(*url_val, "http://www.example.com/image/481989943".to_string()),
                   _ => assert!(false),
                 };
+
                 match thumbnail_height {
-                  JsonValue::JNum(val) => assert_eq!(*val, 125.0f64),
+                  JsonValue::JNum(thumbnail_height_val) => assert_eq!(*thumbnail_height_val, 125.0f64),
                   _ => assert!(false),
                 };
 
                 match thumbnail_width {
-                  JsonValue::JNum(val) => assert_eq!(*val, 100.0f64),
+                  JsonValue::JNum(thumbnail_width_val) => assert_eq!(*thumbnail_width_val, 100.0f64),
                   _ => assert!(false),
                 };
               }
@@ -60,36 +61,35 @@ mod tests {
             };
 
             match animated {
-              JsonValue::JBool(val) => assert_eq!(*val, false),
+              JsonValue::JBool(animated_val) => assert_eq!(*animated_val, false),
               _ => assert!(false),
             };
 
             match ids_array {
               JsonValue::JArray(ids_array_val) => {
                 assert_eq!(ids_array_val.len(), 4);
+                let id_one = &ids_array_val[0];
+                let id_two = &ids_array_val[1];
+                let id_three = &ids_array_val[2];
+                let id_four = &ids_array_val[3];
 
-                let ids_array_val_one = &ids_array_val[0];
-                let ids_array_val_two = &ids_array_val[1];
-                let ids_array_val_three = &ids_array_val[2];
-                let ids_array_val_four = &ids_array_val[3];
-
-                match ids_array_val_one {
-                  JsonValue::JNum(val) => assert_eq!(*val, 116.0f64),
+                match id_one {
+                  JsonValue::JNum(id_one_val) => assert_eq!(*id_one_val, 116.0f64),
                   _ => assert!(false),
                 }
 
-                match ids_array_val_two {
-                  JsonValue::JNum(val) => assert_eq!(*val, 943.0f64),
+                match id_two {
+                  JsonValue::JNum(id_two_val) => assert_eq!(*id_two_val, 943.0f64),
                   _ => assert!(false),
                 }
 
-                match ids_array_val_three {
-                  JsonValue::JNum(val) => assert_eq!(*val, 234.0f64),
+                match id_three {
+                  JsonValue::JNum(id_three_val) => assert_eq!(*id_three_val, 234.0f64),
                   _ => assert!(false),
                 }
 
-                match ids_array_val_four {
-                  JsonValue::JNum(val) => assert_eq!(*val, 38793.0f64),
+                match id_four {
+                  JsonValue::JNum(id_four_val) => assert_eq!(*id_four_val, 38793.0f64),
                   _ => assert!(false),
                 }
               }
@@ -109,10 +109,11 @@ mod tests {
     let good_composite_two: JsonValue = run(&path).unwrap();
 
     match good_composite_two {
-      JsonValue::JArray(val) => {
-        assert_eq!(val.len(), 2);
+      JsonValue::JArray(good_composite_two_val) => {
+        assert_eq!(good_composite_two_val.len(), 2);
+        let obj_one = &good_composite_two_val[0];
+        let obj_two = &good_composite_two_val[1];
 
-        let obj_one = &val[0];
         match obj_one {
           JsonValue::JObj(obj_one_val) => {
             let precision = obj_one_val.get("precision").unwrap();
@@ -134,30 +135,37 @@ mod tests {
               JsonValue::JNum(latitude_val) => assert_eq!(*latitude_val, 37.7668f64),
               _ => assert!(false),
             };
+
             match longitude {
               JsonValue::JNum(longitude_val) => assert_eq!(*longitude_val, -122.3959f64),
               _ => assert!(false),
             };
+
             match address {
               JsonValue::JString(address_val) => assert_eq!(*address_val, "".to_string()),
               _ => assert!(false),
             };
+
             match city {
               JsonValue::JString(city_val) => assert_eq!(*city_val, "SAN FRANCISCO".to_string()),
               _ => assert!(false),
             };
+
             match state {
               JsonValue::JString(state_val) => assert_eq!(*state_val, "CA".to_string()),
               _ => assert!(false),
             };
+
             match zip {
               JsonValue::JString(zip_val) => assert_eq!(*zip_val, "94107".to_string()),
               _ => assert!(false),
             };
+
             match country {
               JsonValue::JString(country_val) => assert_eq!(*country_val, "US".to_string()),
               _ => assert!(false),
             };
+
             match test {
               JsonValue::JBool(test_val) => assert_eq!(*test_val, true),
               _ => assert!(false),
@@ -165,8 +173,6 @@ mod tests {
           }
           _ => assert!(false),
         };
-
-        let obj_two = &val[1];
 
         match obj_two {
           JsonValue::JObj(obj_two_val) => {
@@ -189,30 +195,37 @@ mod tests {
               JsonValue::JNum(latitude_val) => assert_eq!(*latitude_val, 37.371991f64),
               _ => assert!(false),
             };
+
             match longitude {
               JsonValue::JNum(longitude_val) => assert_eq!(*longitude_val, -122.02602f64),
               _ => assert!(false),
             };
+
             match address {
               JsonValue::JString(address_val) => assert_eq!(*address_val, "".to_string()),
               _ => assert!(false),
             };
+
             match city {
               JsonValue::JString(city_val) => assert_eq!(*city_val, "SUNNYVALE".to_string()),
               _ => assert!(false),
             };
+
             match state {
               JsonValue::JString(state_val) => assert_eq!(*state_val, "CA".to_string()),
               _ => assert!(false),
             };
+
             match zip {
               JsonValue::JString(zip_val) => assert_eq!(*zip_val, "94085".to_string()),
               _ => assert!(false),
             };
+
             match country {
               JsonValue::JString(country_val) => assert_eq!(*country_val, "US".to_string()),
               _ => assert!(false),
             };
+
             match test {
               JsonValue::JBool(test_val) => assert_eq!(*test_val, false),
               _ => assert!(false),

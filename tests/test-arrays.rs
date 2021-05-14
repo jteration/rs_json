@@ -9,7 +9,7 @@ mod tests {
     let good_array_one: JsonValue = run(&path).unwrap();
 
     match good_array_one {
-      JsonValue::JArray(val) => assert_eq!(0, val.len()),
+      JsonValue::JArray(good_array_one_val) => assert_eq!(0, good_array_one_val.len()),
       _ => assert!(false),
     }
   }
@@ -20,11 +20,12 @@ mod tests {
     let good_array_two: JsonValue = run(&path).unwrap();
 
     match good_array_two {
-      JsonValue::JArray(val) => {
-        assert_eq!(1, val.len());
+      JsonValue::JArray(good_array_two_val) => {
+        assert_eq!(1, good_array_two_val.len());
+        let array = &good_array_two_val[0];
 
-        match &val[0] {
-          JsonValue::JArray(inner_val) => assert_eq!(0, inner_val.len()),
+        match array {
+          JsonValue::JArray(array_val) => assert_eq!(0, array_val.len()),
           _ => assert!(false),
         }
       }
@@ -38,16 +39,24 @@ mod tests {
     let good_array_three: JsonValue = run(&path).unwrap();
 
     match good_array_three {
-      JsonValue::JArray(val) => {
-        assert_eq!(2, val.len());
+      JsonValue::JArray(good_array_three_val) => {
+        assert_eq!(2, good_array_three_val.len());
+        let num1 = &good_array_three_val[0];
+        let num2 = &good_array_three_val[1];
 
-        match &val[0] {
-          JsonValue::JNum(inner_val) => assert_eq!(1234.0f64, *inner_val),
+        match num1 {
+          JsonValue::JNum(num1_val) => {
+            assert!(1234.1f64 > *num1_val);
+            assert!(1233.9f64 < *num1_val);
+          },
           _ => assert!(false),
         }
 
-        match &val[1] {
-          JsonValue::JNum(inner_val) => assert_eq!(4321.0f64, *inner_val),
+        match num2 {
+          JsonValue::JNum(num2_val) => {
+            assert!(4321.1f64 > *num2_val);
+            assert!(4320.9f64 < *num2_val);
+          },
           _ => assert!(false),
         }
       }
@@ -61,31 +70,39 @@ mod tests {
     let good_array_four: JsonValue = run(&path).unwrap();
 
     match good_array_four {
-      JsonValue::JArray(val) => {
-        assert_eq!(5, val.len());
+      JsonValue::JArray(good_array_four_val) => {
+        assert_eq!(5, good_array_four_val.len());
+        let num = &good_array_four_val[0];
+        let null = &good_array_four_val[1];
+        let bool_one = &good_array_four_val[2];
+        let bool_two = &good_array_four_val[3];
+        let string = &good_array_four_val[4];
 
-        match &val[0] {
-          JsonValue::JNum(inner_val) => assert_eq!(1230000000000000.0f64, *inner_val),
+        match num {
+          JsonValue::JNum(num_val) => {
+            assert!(1231000000000000.0f64 > *num_val);
+            assert!(1229000000000000.0f64 < *num_val);
+          },
           _ => assert!(false),
         }
 
-        match &val[1] {
+        match null {
           JsonValue::JNull => assert!(true),
           _ => assert!(false),
         }
 
-        match &val[2] {
-          JsonValue::JBool(inner_val) => assert_eq!(false, *inner_val),
+        match bool_one {
+          JsonValue::JBool(bool_one_val) => assert_eq!(false, *bool_one_val),
           _ => assert!(false),
         }
 
-        match &val[3] {
-          JsonValue::JBool(inner_val) => assert_eq!(true, *inner_val),
+        match bool_two {
+          JsonValue::JBool(bool_two_val) => assert_eq!(true, *bool_two_val),
           _ => assert!(false),
         }
 
-        match &val[4] {
-          JsonValue::JString(inner_val) => assert_eq!("✨✨✨".to_string(), *inner_val),
+        match string {
+          JsonValue::JString(string_val) => assert_eq!("✨✨✨".to_string(), *string_val),
           _ => assert!(false),
         }
       }
@@ -99,11 +116,12 @@ mod tests {
     let good_array_five: JsonValue = run(&path).unwrap();
 
     match good_array_five {
-      JsonValue::JArray(val) => {
-        assert_eq!(1, val.len());
+      JsonValue::JArray(good_array_five_val) => {
+        assert_eq!(1, good_array_five_val.len());
+        let string = &good_array_five_val[0];
 
-        match &val[0] {
-          JsonValue::JString(inner_val) => assert_eq!(*inner_val, "Whitespace test".to_string()),
+        match string {
+          JsonValue::JString(string_val) => assert_eq!(*string_val, "Whitespace test".to_string()),
           _ => assert!(false),
         }
       }
@@ -117,32 +135,29 @@ mod tests {
     let good_array_six: JsonValue = run(&path).unwrap();
 
     match good_array_six {
-      JsonValue::JArray(root_array) => {
-        assert_eq!(2, root_array.len());
+      JsonValue::JArray(good_array_six_val) => {
+        assert_eq!(2, good_array_six_val.len());
+        let array_one = &good_array_six_val[0];
+        let number = &good_array_six_val[1];
 
-        let inner_array_one = &root_array[0];
-        let number = &root_array[1];
+        match array_one {
+          JsonValue::JArray(array_one_val) => {
+            assert_eq!(1, array_one_val.len());
+            let array_two = &array_one_val[0];
 
-        match inner_array_one {
-          JsonValue::JArray(inner_array_one_val) => {
-            assert_eq!(1, inner_array_one_val.len());
+            match array_two {
+              JsonValue::JArray(array_two_val) => {
+                assert_eq!(2, array_two_val.len());
+                let array_three = &array_two_val[0];
+                let array_four = &array_two_val[1];
 
-            let inner_array_two = &inner_array_one_val[0];
-
-            match inner_array_two {
-              JsonValue::JArray(inner_array_two_val) => {
-                assert_eq!(2, inner_array_two_val.len());
-
-                let inner_array_three = &inner_array_two_val[0];
-                let inner_array_four = &inner_array_two_val[1];
-
-                match inner_array_three {
-                  JsonValue::JArray(inner_array_three_val) => assert_eq!(0, inner_array_three_val.len()),
+                match array_three {
+                  JsonValue::JArray(array_three_val) => assert_eq!(0, array_three_val.len()),
                   _ => assert!(false),
                 }
 
-                match inner_array_four {
-                  JsonValue::JArray(inner_array_four_val) => assert_eq!(0, inner_array_four_val.len()),
+                match array_four {
+                  JsonValue::JArray(array_four_val) => assert_eq!(0, array_four_val.len()),
                   _ => assert!(false),
                 }
               }
@@ -153,7 +168,10 @@ mod tests {
         }
 
         match number {
-          JsonValue::JNum(number_val) => assert_eq!(123400000000000020000000000.0f64, *number_val),
+          JsonValue::JNum(number_val) => {
+            assert!(123500000000000000000000000.0f64 > *number_val);
+            assert!(123300000000000000000000000.0f64 < *number_val);
+          },
           _ => assert!(false),
         }
       }
