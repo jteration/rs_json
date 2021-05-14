@@ -3,6 +3,8 @@ use std::error::Error;
 use std::fs;
 use std::str;
 
+use crate::JsonValue::*;
+
 #[derive(Debug)]
 pub enum JsonValue {
     JObj(HashMap<String, JsonValue>),
@@ -356,11 +358,10 @@ fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<(), Box<dy
 
 impl JsonValue {
     fn new(json_chars: &Vec<char>, position: &mut usize) -> Result<JsonValue, Box<dyn Error>> {
-        use crate::JsonValue::*;
-
         skip_white_space(json_chars, position)?;
 
         let token: char = json_chars[*position];
+
         let value: JsonValue = match token {
             '"' => JString(get_json_string(json_chars, position)?),
             'f' => JBool(get_json_bool(json_chars, position, false)?),
