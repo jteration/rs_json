@@ -18,7 +18,7 @@ pub enum JsonValue {
 struct JsonArgs<'a> {
     chars: &'a Vec<char>,
     position: &'a mut usize,
-    length: &'a usize
+    length: &'a usize,
 }
 
 fn increment_position(json_args: &mut JsonArgs, increment_by: usize) -> Result<(), Box<dyn Error>> {
@@ -402,7 +402,11 @@ fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     let mut position: usize = 0;
     let json_length = characters.len();
 
-    let mut json_args = JsonArgs { chars: &characters, position: &mut position, length: &json_length };
+    let mut json_args = JsonArgs {
+        chars: &characters,
+        position: &mut position,
+        length: &json_length,
+    };
 
     let root_value: JsonValue = JsonValue::new(&mut json_args)?;
 
