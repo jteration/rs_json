@@ -90,8 +90,8 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 }
             }
             ',' => {
-                increment_position(json_args, 1)?;
                 expecting_val = true;
+                increment_position(json_args, 1)?;
             }
             '}' => {
                 if expecting_val {
@@ -133,8 +133,8 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
 
         match token {
             ',' => {
-                increment_position(json_args, 1)?;
                 expecting_val = true;
+                increment_position(json_args, 1)?;
             }
             ']' => {
                 if expecting_val {
