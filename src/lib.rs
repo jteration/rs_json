@@ -59,7 +59,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
 
     let mut json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut get_val: bool = false;
-    let mut new_val: bool = false;
+    let mut expecting_val: bool = false;
     let mut key = "".to_string();
     let mut done: bool = false;
 
@@ -78,7 +78,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                     let val: JsonValue = JsonValue::new(json_args)?;
                     json_obj.insert(key.clone(), val);
                     get_val = false;
-                    new_val = false;
+                    expecting_val = false;
                     key = "".to_string();
                 }
             }
@@ -91,10 +91,10 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
             }
             ',' => {
                 increment_position(json_args, 1)?;
-                new_val = true;
+                expecting_val = true;
             }
             '}' => {
-                if new_val {
+                if expecting_val {
                     // Must not end if we're expecting another value
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
@@ -109,7 +109,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 let val: JsonValue = JsonValue::new(json_args)?;
                 json_obj.insert(key.clone(), val);
                 get_val = false;
-                new_val = false;
+                expecting_val = false;
                 key = "".to_string();
             }
         }
@@ -123,7 +123,7 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
     increment_position(json_args, 1)?;
 
     let mut json_arr: Vec<JsonValue> = vec![];
-    let mut new_val: bool = false;
+    let mut expecting_val: bool = false;
     let mut done: bool = false;
 
     while !done {
@@ -134,10 +134,10 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
         match token {
             ',' => {
                 increment_position(json_args, 1)?;
-                new_val = true;
+                expecting_val = true;
             }
             ']' => {
-                if new_val {
+                if expecting_val {
                     // Must not end if we're expecting another value
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
@@ -149,7 +149,7 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
             }
             _ => {
                 json_arr.push(JsonValue::new(json_args)?);
-                new_val = false;
+                expecting_val = false;
             }
         }
     }
