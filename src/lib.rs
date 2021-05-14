@@ -51,6 +51,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
 
     let mut json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut get_val: bool = false;
+    let mut new_val: bool = false;
     let mut key = "".to_string();
     let mut done: bool = false;
 
@@ -69,6 +70,7 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                     let val: JsonValue = JsonValue::new(&json_chars, position)?;
                     json_obj.insert(key.clone(), val);
                     get_val = false;
+                    new_val = false;
                     key = "".to_string();
                 }
             }
@@ -79,18 +81,27 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
                     increment_position(json_chars, position, 1)?;
                 }
             }
-            ',' => increment_position(json_chars, position, 1)?,
+            ',' => {
+                increment_position(json_chars, position, 1)?;
+                new_val = true;
+            }
             '}' => {
+                if new_val {
+                    // Must not end if we're expecting another value
+                    return Err(format!("Invalid char at position {}", position).into());
+                }
+
                 done = true;
 
                 // Put position past closing curly bracket
                 increment_position(json_chars, position, 1)?;
-            },
+            }
             _ => {
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(&json_chars, position)?;
                 json_obj.insert(key.clone(), val);
                 get_val = false;
+                new_val = false;
                 key = "".to_string();
             }
         }
@@ -104,6 +115,7 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Js
     increment_position(json_chars, position, 1)?;
 
     let mut json_arr: Vec<JsonValue> = vec![];
+    let mut new_val: bool = false;
     let mut done: bool = false;
 
     while !done {
@@ -112,14 +124,25 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Js
         let token = json_chars[*position];
 
         match token {
-            ',' => increment_position(json_chars, position, 1)?,
+            ',' => {
+                increment_position(json_chars, position, 1)?;
+                new_val = true;
+            }
             ']' => {
+                if new_val {
+                    // Must not end if we're expecting another value
+                    return Err(format!("Invalid char at position {}", position).into());
+                }
+
                 done = true;
 
                 // Put position past closing square bracket
                 increment_position(json_chars, position, 1)?;
-            },
-            _ => json_arr.push(JsonValue::new(&json_chars, position)?),
+            }
+            _ => {
+                json_arr.push(JsonValue::new(&json_chars, position)?);
+                new_val = false;
+            }
         }
     }
 
@@ -153,26 +176,26 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
                         let second_byte = get_char_at_offset(json_chars, position, 3)? as u8;
                         let third_byte = get_char_at_offset(json_chars, position, 4)? as u8;
                         let fourth_byte = get_char_at_offset(json_chars, position, 5)? as u8;
-    
+
                         let bytes = [first_byte, second_byte, third_byte, fourth_byte];
-    
+
                         let from_hex: &str = str::from_utf8(&bytes)?;
                         let as_u16 = u16::from_str_radix(&from_hex, 16)?;
                         new_string.push(as_u16);
-    
+
                         increment_position(json_chars, position, 4)?;
                     }
                     _ => return Err(format!("Invalid char at position {}", position).into()),
                 }
-    
+
                 increment_position(json_chars, position, 2)?;
-            },
+            }
             '"' => {
                 done = true;
 
                 // Put position past closed double quotation
                 increment_position(json_chars, position, 1)?;
-            },
+            }
             _ => {
                 new_string.push(token as u16);
                 increment_position(json_chars, position, 1)?;
