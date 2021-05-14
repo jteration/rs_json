@@ -7,7 +7,7 @@ use crate::JsonValue::*;
 
 #[derive(Debug)]
 pub enum JsonValue {
-    JObj(HashMap<String, JsonValue>),
+    JObject(HashMap<String, JsonValue>),
     JArray(Vec<JsonValue>),
     JString(String),
     JNum(f64),
@@ -312,11 +312,11 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     })
 }
 
-fn get_json_bool(json_args: &mut JsonArgs, t_or_f: bool) -> Result<bool, Box<dyn Error>> {
+fn get_json_bool(json_args: &mut JsonArgs, t_or_f: &char) -> Result<bool, Box<dyn Error>> {
     // Char will be 'f' or 't'
     increment_position(json_args, 1)?;
 
-    if t_or_f == true {
+    if *t_or_f == 't' {
         // Check if characters are 't' 'r' 'u' 'e'
         let true_test: Vec<char> = vec!['r', 'u', 'e'];
 
@@ -370,14 +370,13 @@ impl JsonValue {
 
         let value: JsonValue = match token {
             '"' => JString(get_json_string(json_args)?),
-            'f' => JBool(get_json_bool(json_args, false)?),
-            't' => JBool(get_json_bool(json_args, true)?),
+            'f' | 't' => JBool(get_json_bool(json_args, &token)?),
             '-' | '0'..='9' => JNum(get_json_num(json_args)?),
             'n' => {
                 check_null(json_args)?;
                 JNull
             }
-            '{' => JObj(get_json_object(json_args)?),
+            '{' => JObject(get_json_object(json_args)?),
             '[' => JArray(get_json_array(json_args)?),
             _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
         };

@@ -9,11 +9,11 @@ mod tests {
     let good_composite_one: JsonValue = run(&path).unwrap();
 
     match good_composite_one {
-      JsonValue::JObj(good_composite_one_val) => {
+      JsonValue::JObject(good_composite_one_val) => {
         let image_obj = good_composite_one_val.get("Image").unwrap();
 
         match image_obj {
-          JsonValue::JObj(image_obj_val) => {
+          JsonValue::JObject(image_obj_val) => {
             let width = image_obj_val.get("Width").unwrap();
             let height = image_obj_val.get("Height").unwrap();
             let title = image_obj_val.get("Title").unwrap();
@@ -37,7 +37,7 @@ mod tests {
             };
 
             match thumbnail_obj {
-              JsonValue::JObj(thumbnail_obj_val) => {
+              JsonValue::JObject(thumbnail_obj_val) => {
                 let url = thumbnail_obj_val.get("Url").unwrap();
                 let thumbnail_height = thumbnail_obj_val.get("Height").unwrap();
                 let thumbnail_width = thumbnail_obj_val.get("Width").unwrap();
@@ -115,7 +115,7 @@ mod tests {
         let obj_two = &good_composite_two_val[1];
 
         match obj_one {
-          JsonValue::JObj(obj_one_val) => {
+          JsonValue::JObject(obj_one_val) => {
             let precision = obj_one_val.get("precision").unwrap();
             let latitude = obj_one_val.get("Latitude").unwrap();
             let longitude = obj_one_val.get("Longitude").unwrap();
@@ -175,7 +175,7 @@ mod tests {
         };
 
         match obj_two {
-          JsonValue::JObj(obj_two_val) => {
+          JsonValue::JObject(obj_two_val) => {
             let precision = obj_two_val.get("precision").unwrap();
             let latitude = obj_two_val.get("Latitude").unwrap();
             let longitude = obj_two_val.get("Longitude").unwrap();

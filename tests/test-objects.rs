@@ -9,7 +9,7 @@ mod tests {
     let good_object_one: JsonValue = run(&path).unwrap();
 
     match good_object_one {
-      JsonValue::JObj(good_object_one_val) => assert_eq!(good_object_one_val.is_empty(), true),
+      JsonValue::JObject(good_object_one_val) => assert_eq!(good_object_one_val.is_empty(), true),
       _ => assert!(false),
     }
   }
@@ -20,11 +20,11 @@ mod tests {
     let good_object_two: JsonValue = run(&path).unwrap();
 
     match good_object_two {
-      JsonValue::JObj(good_object_two_val) => {
+      JsonValue::JObject(good_object_two_val) => {
         let obj = good_object_two_val.get("test").unwrap();
 
         match obj {
-          JsonValue::JObj(obj_val) => assert_eq!(obj_val.is_empty(), true),
+          JsonValue::JObject(obj_val) => assert_eq!(obj_val.is_empty(), true),
           _ => assert!(false),
         }
       }
@@ -38,7 +38,7 @@ mod tests {
     let good_object_three: JsonValue = run(&path).unwrap();
 
     match good_object_three {
-      JsonValue::JObj(good_object_three_val) => {
+      JsonValue::JObject(good_object_three_val) => {
         let string = good_object_three_val.get("key1").unwrap();
         let num = good_object_three_val.get("key2").unwrap();
         let bool = good_object_three_val.get("key3").unwrap();
@@ -77,7 +77,7 @@ mod tests {
     let good_object_four: JsonValue = run(&path).unwrap();
 
     match good_object_four {
-      JsonValue::JObj(val) => {
+      JsonValue::JObject(val) => {
         let num_one = val.get("num1").unwrap();
         let num_two = val.get("num2").unwrap();
         let num_three = val.get("num3").unwrap();
