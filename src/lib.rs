@@ -46,7 +46,7 @@ fn is_white_space(token: char) -> bool {
 }
 
 fn skip_white_space(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
-    while is_white_space(json_args.chars[*json_args.position]) {
+    while is_white_space(get_char_at_offset(json_args, 0)?) {
         increment_position(json_args, 1)?;
     }
 
@@ -66,7 +66,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
     while !done {
         skip_white_space(json_args)?;
 
-        let token = json_args.chars[*json_args.position];
+        let token = get_char_at_offset(json_args, 0)?;
 
         match token {
             '"' => {
@@ -128,7 +128,7 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
     while !done {
         skip_white_space(json_args)?;
 
-        let token = json_args.chars[*json_args.position];
+        let token = get_char_at_offset(json_args, 0)?;
 
         match token {
             ',' => {
@@ -163,7 +163,7 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
     let mut done: bool = false;
 
     while !done {
-        let token = json_args.chars[*json_args.position];
+        let token = get_char_at_offset(json_args, 0)?;
 
         match token {
             '\\' => {
@@ -213,7 +213,7 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
 
 fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     // Char will be a digit or '-'
-    let mut token = json_args.chars[*json_args.position];
+    let mut token = get_char_at_offset(json_args, 0)?;
     let mut new_num: Vec<char> = vec![];
     let mut has_decimal: bool = false;
     let mut has_exponent: bool = false;
@@ -225,7 +225,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     if token == '-' {
         new_num.push(token);
         increment_position(json_args, 1)?;
-        token = json_args.chars[*json_args.position];
+        token = get_char_at_offset(json_args, 0)?;
     }
 
     // Check for leading '0'
@@ -241,7 +241,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     let mut done: bool = false;
 
     while !done {
-        token = json_args.chars[*json_args.position];
+        token = get_char_at_offset(json_args, 0)?;
 
         match token {
             '.' => {
@@ -325,7 +325,7 @@ fn get_json_bool(json_args: &mut JsonArgs, t_or_f: &char) -> Result<bool, Box<dy
         let true_test: Vec<char> = vec!['r', 'u', 'e'];
 
         for i in 0..3 {
-            if json_args.chars[*json_args.position] != true_test[i] {
+            if get_char_at_offset(json_args, 0)? != true_test[i] {
                 return Err(format!("Invalid char at position {}", json_args.position).into());
             }
 
@@ -338,7 +338,7 @@ fn get_json_bool(json_args: &mut JsonArgs, t_or_f: &char) -> Result<bool, Box<dy
         let false_test: Vec<char> = vec!['a', 'l', 's', 'e'];
 
         for i in 0..4 {
-            if json_args.chars[*json_args.position] != false_test[i] {
+            if get_char_at_offset(json_args, 0)? != false_test[i] {
                 return Err(format!("Invalid char at position {}", json_args.position).into());
             }
 
@@ -356,7 +356,7 @@ fn check_null(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
     let null_test: Vec<char> = vec!['u', 'l', 'l'];
 
     for i in 0..3 {
-        if json_args.chars[*json_args.position] != null_test[i] {
+        if get_char_at_offset(json_args, 0)? != null_test[i] {
             return Err(format!("Invalid char at position {}", json_args.position).into());
         }
 
@@ -370,7 +370,7 @@ impl JsonValue {
     fn new(json_args: &mut JsonArgs) -> Result<JsonValue, Box<dyn Error>> {
         skip_white_space(json_args)?;
 
-        let token: char = json_args.chars[*json_args.position];
+        let token: char = get_char_at_offset(json_args, 0)?;
 
         let value: JsonValue = match token {
             '"' => JString(get_json_string(json_args)?),
