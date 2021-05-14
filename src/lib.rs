@@ -247,16 +247,17 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
 
         match token {
             '.' => {
+                // '.' char is only valid in the initial number, and can only have one
                 if expecting_num || has_decimal || has_exponent {
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
 
-                // '.' char is only valid in the initial number
                 new_num.push(token);
                 has_decimal = true;
                 expecting_num = true;
             }
             'e' | 'E' => {
+                // Only one 'e' or 'E' per number
                 if expecting_num || has_exponent {
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
