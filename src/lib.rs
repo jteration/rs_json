@@ -57,7 +57,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
     // Char will be an open curly bracket
     increment_position(json_args, 1)?;
 
-    let mut json_obj: HashMap<String, JsonValue> = HashMap::new();
+    let mut new_json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut get_val: bool = false;
     let mut expecting_val: bool = false;
     let mut key = "".to_string();
@@ -76,7 +76,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 } else {
                     // Val is string
                     let val: JsonValue = JsonValue::new(json_args)?;
-                    json_obj.insert(key.clone(), val);
+                    new_json_obj.insert(key.clone(), val);
                     get_val = false;
                     expecting_val = false;
                     key = "".to_string();
@@ -107,7 +107,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
             _ => {
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(json_args)?;
-                json_obj.insert(key.clone(), val);
+                new_json_obj.insert(key.clone(), val);
                 get_val = false;
                 expecting_val = false;
                 key = "".to_string();
@@ -115,14 +115,14 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
         }
     }
 
-    Ok(json_obj)
+    Ok(new_json_obj)
 }
 
 fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Error>> {
     // Char will be an open square bracket
     increment_position(json_args, 1)?;
 
-    let mut json_arr: Vec<JsonValue> = vec![];
+    let mut new_json_arr: Vec<JsonValue> = vec![];
     let mut expecting_val: bool = false;
     let mut done: bool = false;
 
@@ -148,13 +148,13 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
                 increment_position(json_args, 1)?;
             }
             _ => {
-                json_arr.push(JsonValue::new(json_args)?);
+                new_json_arr.push(JsonValue::new(json_args)?);
                 expecting_val = false;
             }
         }
     }
 
-    Ok(json_arr)
+    Ok(new_json_arr)
 }
 
 fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
@@ -216,7 +216,7 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
 fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     // Char will be a digit or '-'
     let mut token = json_args.chars[*json_args.position];
-    let mut num: Vec<char> = vec![];
+    let mut new_num: Vec<char> = vec![];
     let mut has_decimal: bool = false;
     let mut has_exponent: bool = false;
     let mut negative_exponent: bool = false;
@@ -224,7 +224,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
 
     // Check if negative
     if token == '-' {
-        num.push(token);
+        new_num.push(token);
         increment_position(json_args, 1)?;
         token = json_args.chars[*json_args.position];
     }
@@ -247,7 +247,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
             '.' => {
                 if !has_decimal && !has_exponent {
                     // '.' char is only valid in the initial number
-                    num.push(token);
+                    new_num.push(token);
                     has_decimal = true;
                 } else if has_decimal || has_exponent {
                     // Can only have one '.' and it may not appear in the exponent
@@ -278,7 +278,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
                 if has_exponent {
                     exponent.push(token);
                 } else {
-                    num.push(token);
+                    new_num.push(token);
                 }
             }
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
@@ -296,7 +296,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
         }
     }
 
-    let parsed_num: f64 = num.iter().collect::<String>().parse::<f64>()?;
+    let parsed_num: f64 = new_num.iter().collect::<String>().parse::<f64>()?;
 
     Ok(if has_exponent {
         let parsed_exponent: f64 = exponent.iter().collect::<String>().parse::<f64>()?;
