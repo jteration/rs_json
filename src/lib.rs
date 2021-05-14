@@ -58,8 +58,8 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
     increment_position(json_args, 1)?;
 
     let mut new_json_obj: HashMap<String, JsonValue> = HashMap::new();
-    let mut get_val: bool = false;
     let mut expecting_val: bool = false;
+    let mut expecting_key_or_end: bool = true;
     let mut key = "".to_string();
     let mut done: bool = false;
 
@@ -70,31 +70,38 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
 
         match token {
             '"' => {
-                if !get_val {
+                if expecting_key_or_end {
                     key = get_json_string(json_args)?;
-                    get_val = true;
-                } else {
+                    expecting_val = true;
+                    expecting_key_or_end = false;
+                } else if expecting_val {
                     // Val is string
                     let val: JsonValue = JsonValue::new(json_args)?;
                     new_json_obj.insert(key.clone(), val);
-                    get_val = false;
                     expecting_val = false;
+                    expecting_key_or_end = true;
                     key = "".to_string();
+                } else {
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
             }
             ':' => {
-                if !get_val {
+                if expecting_key_or_end || !expecting_val {
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 } else {
                     increment_position(json_args, 1)?;
                 }
             }
             ',' => {
+                if expecting_val || !expecting_key_or_end {
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
+                }
+
                 expecting_val = true;
                 increment_position(json_args, 1)?;
             }
             '}' => {
-                if expecting_val {
+                if expecting_val || !expecting_key_or_end {
                     // Must not end if we're expecting another value
                     return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
@@ -104,11 +111,14 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 increment_position(json_args, 1)?;
             }
             _ => {
+                if expecting_key_or_end || !expecting_val {
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
+                }
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(json_args)?;
                 new_json_obj.insert(key.clone(), val);
-                get_val = false;
                 expecting_val = false;
+                expecting_key_or_end = true;
                 key = "".to_string();
             }
         }
