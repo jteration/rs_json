@@ -15,41 +15,47 @@ pub enum JsonValue {
     JNull,
 }
 
-fn increment_position(json_chars: &Vec<char>, position: &mut usize, num_incremented: usize) -> Result<(), Box<dyn Error>> {
+struct JsonArgs<'a> {
+    chars: &'a Vec<char>,
+    position: &'a mut usize,
+    length: &'a usize
+}
+
+fn increment_position(json_args: &mut JsonArgs, increment_by: usize) -> Result<(), Box<dyn Error>> {
     // Check if new position is past the end of the json string
-    if *position + num_incremented > json_chars.len() {
+    if *json_args.position + increment_by > *json_args.length {
         return Err("Reached end of JSON unexpectedly".into());
     }
 
-    *position += num_incremented;
+    *json_args.position += increment_by;
 
     Ok(())
 }
 
-fn get_char_at_offset(json_chars: &Vec<char>, position: &mut usize, offset: usize) -> Result<char, Box<dyn Error>> {
+fn get_char_at_offset(json_args: &mut JsonArgs, offset: usize) -> Result<char, Box<dyn Error>> {
     // Check if char is past the end of the json string
-    if *position + offset > json_chars.len() - 1 {
+    if *json_args.position + offset > json_args.length - 1 {
         return Err("Reached end of JSON unexpectedly".into());
     }
 
-    Ok(json_chars[*position + offset])
+    Ok(json_args.chars[*json_args.position + offset])
 }
 
 fn is_white_space(token: char) -> bool {
     token == ' ' || token == '\n' || token == '\r' || token == '\t'
 }
 
-fn skip_white_space(json_chars: &Vec<char>, position: &mut usize) -> Result<(), Box<dyn Error>> {
-    while is_white_space(json_chars[*position]) {
-        increment_position(json_chars, position, 1)?;
+fn skip_white_space(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
+    while is_white_space(json_args.chars[*json_args.position]) {
+        increment_position(json_args, 1)?;
     }
 
     Ok(())
 }
 
-fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashMap<String, JsonValue>, Box<dyn Error>> {
+fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue>, Box<dyn Error>> {
     // Char will be an open curly bracket
-    increment_position(json_chars, position, 1)?;
+    increment_position(json_args, 1)?;
 
     let mut json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut get_val: bool = false;
@@ -58,18 +64,18 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
     let mut done: bool = false;
 
     while !done {
-        skip_white_space(json_chars, position)?;
+        skip_white_space(json_args)?;
 
-        let token = json_chars[*position];
+        let token = json_args.chars[*json_args.position];
 
         match token {
             '"' => {
                 if !get_val {
-                    key = get_json_string(json_chars, position)?;
+                    key = get_json_string(json_args)?;
                     get_val = true;
                 } else {
                     // Val is string
-                    let val: JsonValue = JsonValue::new(&json_chars, position)?;
+                    let val: JsonValue = JsonValue::new(json_args)?;
                     json_obj.insert(key.clone(), val);
                     get_val = false;
                     new_val = false;
@@ -78,29 +84,29 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
             }
             ':' => {
                 if !get_val {
-                    return Err(format!("Invalid char at position {}", position).into());
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
                 } else {
-                    increment_position(json_chars, position, 1)?;
+                    increment_position(json_args, 1)?;
                 }
             }
             ',' => {
-                increment_position(json_chars, position, 1)?;
+                increment_position(json_args, 1)?;
                 new_val = true;
             }
             '}' => {
                 if new_val {
                     // Must not end if we're expecting another value
-                    return Err(format!("Invalid char at position {}", position).into());
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
 
                 done = true;
 
                 // Put position past closing curly bracket
-                increment_position(json_chars, position, 1)?;
+                increment_position(json_args, 1)?;
             }
             _ => {
                 // JsonValue::new will check if its a valid value starter
-                let val: JsonValue = JsonValue::new(&json_chars, position)?;
+                let val: JsonValue = JsonValue::new(json_args)?;
                 json_obj.insert(key.clone(), val);
                 get_val = false;
                 new_val = false;
@@ -112,37 +118,37 @@ fn get_json_object(json_chars: &Vec<char>, position: &mut usize) -> Result<HashM
     Ok(json_obj)
 }
 
-fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<JsonValue>, Box<dyn Error>> {
+fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Error>> {
     // Char will be an open square bracket
-    increment_position(json_chars, position, 1)?;
+    increment_position(json_args, 1)?;
 
     let mut json_arr: Vec<JsonValue> = vec![];
     let mut new_val: bool = false;
     let mut done: bool = false;
 
     while !done {
-        skip_white_space(json_chars, position)?;
+        skip_white_space(json_args)?;
 
-        let token = json_chars[*position];
+        let token = json_args.chars[*json_args.position];
 
         match token {
             ',' => {
-                increment_position(json_chars, position, 1)?;
+                increment_position(json_args, 1)?;
                 new_val = true;
             }
             ']' => {
                 if new_val {
                     // Must not end if we're expecting another value
-                    return Err(format!("Invalid char at position {}", position).into());
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
 
                 done = true;
 
                 // Put position past closing square bracket
-                increment_position(json_chars, position, 1)?;
+                increment_position(json_args, 1)?;
             }
             _ => {
-                json_arr.push(JsonValue::new(&json_chars, position)?);
+                json_arr.push(JsonValue::new(json_args)?);
                 new_val = false;
             }
         }
@@ -151,19 +157,19 @@ fn get_json_array(json_chars: &Vec<char>, position: &mut usize) -> Result<Vec<Js
     Ok(json_arr)
 }
 
-fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<String, Box<dyn Error>> {
+fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
     // Char will be an open double quotation
-    increment_position(json_chars, position, 1)?;
+    increment_position(json_args, 1)?;
 
     let mut new_string: Vec<u16> = vec![];
     let mut done: bool = false;
 
     while !done {
-        let token = json_chars[*position];
+        let token = json_args.chars[*json_args.position];
 
         match token {
             '\\' => {
-                let escaped_char = get_char_at_offset(json_chars, position, 1)?;
+                let escaped_char = get_char_at_offset(json_args, 1)?;
 
                 match escaped_char {
                     'b' => new_string.push(0008 as u16),
@@ -174,10 +180,10 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
                     '"' => new_string.push(0034 as u16),
                     '\\' => new_string.push(0092 as u16),
                     'u' => {
-                        let first_byte = get_char_at_offset(json_chars, position, 2)? as u8;
-                        let second_byte = get_char_at_offset(json_chars, position, 3)? as u8;
-                        let third_byte = get_char_at_offset(json_chars, position, 4)? as u8;
-                        let fourth_byte = get_char_at_offset(json_chars, position, 5)? as u8;
+                        let first_byte = get_char_at_offset(json_args, 2)? as u8;
+                        let second_byte = get_char_at_offset(json_args, 3)? as u8;
+                        let third_byte = get_char_at_offset(json_args, 4)? as u8;
+                        let fourth_byte = get_char_at_offset(json_args, 5)? as u8;
 
                         let bytes = [first_byte, second_byte, third_byte, fourth_byte];
 
@@ -185,22 +191,22 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
                         let as_u16 = u16::from_str_radix(&from_hex, 16)?;
                         new_string.push(as_u16);
 
-                        increment_position(json_chars, position, 4)?;
+                        increment_position(json_args, 4)?;
                     }
-                    _ => return Err(format!("Invalid char at position {}", position).into()),
+                    _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
                 }
 
-                increment_position(json_chars, position, 2)?;
+                increment_position(json_args, 2)?;
             }
             '"' => {
                 done = true;
 
                 // Put position past closed double quotation
-                increment_position(json_chars, position, 1)?;
+                increment_position(json_args, 1)?;
             }
             _ => {
                 new_string.push(token as u16);
-                increment_position(json_chars, position, 1)?;
+                increment_position(json_args, 1)?;
             }
         }
     }
@@ -208,9 +214,9 @@ fn get_json_string(json_chars: &Vec<char>, position: &mut usize) -> Result<Strin
     Ok(String::from_utf16(&new_string)?)
 }
 
-fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box<dyn Error>> {
+fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     // Char will be a digit or '-'
-    let mut token = json_chars[*position];
+    let mut token = json_args.chars[*json_args.position];
     let mut num: Vec<char> = vec![];
     let mut has_decimal: bool = false;
     let mut has_exponent: bool = false;
@@ -220,23 +226,23 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     // Check if negative
     if token == '-' {
         num.push(token);
-        increment_position(json_chars, position, 1)?;
-        token = json_chars[*position];
+        increment_position(json_args, 1)?;
+        token = json_args.chars[*json_args.position];
     }
 
     // Check for leading '0'
     if token == '0' {
-        let next_char = get_char_at_offset(json_chars, position, 1)?;
+        let next_char = get_char_at_offset(json_args, 1)?;
 
         if !(next_char == '.' || next_char == ',' || is_white_space(next_char)) {
-            return Err(format!("Invalid char at position {}", position).into());
+            return Err(format!("Invalid char at position {}", json_args.position).into());
         }
     }
 
     let mut done: bool = false;
 
     while !done {
-        token = json_chars[*position];
+        token = json_args.chars[*json_args.position];
 
         match token {
             '.' => {
@@ -246,27 +252,27 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
                     has_decimal = true;
                 } else if has_decimal || has_exponent {
                     // Can only have one '.' and it may not appear in the exponent
-                    return Err(format!("Invalid char at position {}", position).into());
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
             }
             'e' | 'E' => {
                 if !has_exponent {
                     has_exponent = true;
-                    let next_char = get_char_at_offset(json_chars, position, 1)?;
+                    let next_char = get_char_at_offset(json_args, 1)?;
 
                     // Check for '-' or '+' after exponent
                     if next_char == '-' {
                         negative_exponent = true;
-                        increment_position(json_chars, position, 1)?;
+                        increment_position(json_args, 1)?;
                     } else if next_char == '+' {
-                        increment_position(json_chars, position, 1)?;
+                        increment_position(json_args, 1)?;
                     } else if !next_char.is_digit(10) {
                         // If next char isn't '-' or '+' ensure its a digit
-                        return Err(format!("Invalid char at position {}", position).into());
+                        return Err(format!("Invalid char at position {}", json_args.position).into());
                     }
                 } else {
                     // Can only have one exponent
-                    return Err(format!("Invalid char at position {}", position).into());
+                    return Err(format!("Invalid char at position {}", json_args.position).into());
                 }
             }
             '0'..='9' => {
@@ -279,15 +285,15 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
                 done = true;
             }
-            _ => return Err(format!("Invalid char at position {}", position).into()),
+            _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
         }
 
         if !done {
-            if *position + 1 == json_chars.len() {
+            if *json_args.position + 1 == json_args.chars.len() {
                 done = true;
             }
 
-            increment_position(json_chars, position, 1)?;
+            increment_position(json_args, 1)?;
         }
     }
 
@@ -306,20 +312,20 @@ fn get_json_num(json_chars: &Vec<char>, position: &mut usize) -> Result<f64, Box
     })
 }
 
-fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> Result<bool, Box<dyn Error>> {
+fn get_json_bool(json_args: &mut JsonArgs, t_or_f: bool) -> Result<bool, Box<dyn Error>> {
     // Char will be 'f' or 't'
-    increment_position(json_chars, position, 1)?;
+    increment_position(json_args, 1)?;
 
     if t_or_f == true {
         // Check if characters are 't' 'r' 'u' 'e'
         let true_test: Vec<char> = vec!['r', 'u', 'e'];
 
         for i in 0..true_test.len() {
-            if json_chars[*position] != true_test[i] {
-                return Err(format!("Invalid char at position {}", position).into());
+            if json_args.chars[*json_args.position] != true_test[i] {
+                return Err(format!("Invalid char at position {}", json_args.position).into());
             }
 
-            increment_position(json_chars, position, 1)?;
+            increment_position(json_args, 1)?;
         }
 
         return Ok(true);
@@ -328,52 +334,52 @@ fn get_json_bool(json_chars: &Vec<char>, position: &mut usize, t_or_f: bool) -> 
         let false_test: Vec<char> = vec!['a', 'l', 's', 'e'];
 
         for i in 0..false_test.len() {
-            if json_chars[*position] != false_test[i] {
-                return Err(format!("Invalid char at position {}", position).into());
+            if json_args.chars[*json_args.position] != false_test[i] {
+                return Err(format!("Invalid char at position {}", json_args.position).into());
             }
 
-            increment_position(json_chars, position, 1)?;
+            increment_position(json_args, 1)?;
         }
 
         return Ok(false);
     }
 }
 
-fn check_null(json_chars: &Vec<char>, position: &mut usize) -> Result<(), Box<dyn Error>> {
+fn check_null(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
     // Char will be 'n'
-    increment_position(json_chars, position, 1)?;
+    increment_position(json_args, 1)?;
 
     let null_test: Vec<char> = vec!['u', 'l', 'l'];
 
     for i in 0..null_test.len() {
-        if json_chars[*position] != null_test[i] {
-            return Err(format!("Invalid char at position {}", position).into());
+        if json_args.chars[*json_args.position] != null_test[i] {
+            return Err(format!("Invalid char at position {}", json_args.position).into());
         }
 
-        increment_position(json_chars, position, 1)?;
+        increment_position(json_args, 1)?;
     }
 
     Ok(())
 }
 
 impl JsonValue {
-    fn new(json_chars: &Vec<char>, position: &mut usize) -> Result<JsonValue, Box<dyn Error>> {
-        skip_white_space(json_chars, position)?;
+    fn new(json_args: &mut JsonArgs) -> Result<JsonValue, Box<dyn Error>> {
+        skip_white_space(json_args)?;
 
-        let token: char = json_chars[*position];
+        let token: char = json_args.chars[*json_args.position];
 
         let value: JsonValue = match token {
-            '"' => JString(get_json_string(json_chars, position)?),
-            'f' => JBool(get_json_bool(json_chars, position, false)?),
-            't' => JBool(get_json_bool(json_chars, position, true)?),
-            '-' | '0'..='9' => JNum(get_json_num(json_chars, position)?),
+            '"' => JString(get_json_string(json_args)?),
+            'f' => JBool(get_json_bool(json_args, false)?),
+            't' => JBool(get_json_bool(json_args, true)?),
+            '-' | '0'..='9' => JNum(get_json_num(json_args)?),
             'n' => {
-                check_null(json_chars, position)?;
+                check_null(json_args)?;
                 JNull
             }
-            '{' => JObj(get_json_object(json_chars, position)?),
-            '[' => JArray(get_json_array(json_chars, position)?),
-            _ => return Err(format!("Invalid char at position {}", position).into()),
+            '{' => JObj(get_json_object(json_args)?),
+            '[' => JArray(get_json_array(json_args)?),
+            _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
         };
 
         Ok(value)
@@ -393,9 +399,12 @@ fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     }
 
     let characters: Vec<char> = json_string.chars().collect();
-    let json_length = characters.len();
     let mut position: usize = 0;
-    let root_value: JsonValue = JsonValue::new(&characters, &mut position)?;
+    let json_length = characters.len();
+
+    let mut json_args = JsonArgs { chars: &characters, position: &mut position, length: &json_length };
+
+    let root_value: JsonValue = JsonValue::new(&mut json_args)?;
 
     // Ensure any characters after end of root value are just whitespace characters
     while position < json_length {
