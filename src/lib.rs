@@ -25,15 +25,15 @@ struct JsonArgs<'a> {
 
 #[derive(Debug, Clone)]
 enum JsonError {
-    IllegalCharError(usize),
-    UnexpectedEndError,
+    IllegalChar(usize),
+    UnexpectedEnd,
 }
 
 impl fmt::Display for JsonError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            JsonError::IllegalCharError(position) => write!(f, "Invalid char at position {}", position),
-            JsonError::UnexpectedEndError => write!(f, "Reached end of JSON unexpectedly"),
+            JsonError::IllegalChar(position) => write!(f, "Invalid char at position {}", position),
+            JsonError::UnexpectedEnd => write!(f, "Reached end of JSON unexpectedly"),
         }
     }
 }
@@ -41,8 +41,8 @@ impl fmt::Display for JsonError {
 impl error::Error for JsonError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
-            JsonError::IllegalCharError(_) => None,
-            JsonError::UnexpectedEndError => None,
+            JsonError::IllegalChar(_) => None,
+            JsonError::UnexpectedEnd => None,
         }
     }
 }
@@ -50,7 +50,7 @@ impl error::Error for JsonError {
 fn increment_position(json_args: &mut JsonArgs, increment_by: usize) -> Result<(), Box<dyn Error>> {
     // Check if new position is past the end of the json string
     if *json_args.position + increment_by > *json_args.length {
-        return Err(Box::new(JsonError::UnexpectedEndError));
+        return Err(Box::new(JsonError::UnexpectedEnd));
     }
 
     *json_args.position += increment_by;
@@ -61,7 +61,7 @@ fn increment_position(json_args: &mut JsonArgs, increment_by: usize) -> Result<(
 fn get_char_at_offset(json_args: &mut JsonArgs, offset: usize) -> Result<char, Box<dyn Error>> {
     // Check if char is past the end of the json string
     if *json_args.position + offset > json_args.length - 1 {
-        return Err(Box::new(JsonError::UnexpectedEndError));
+        return Err(Box::new(JsonError::UnexpectedEnd));
     }
 
     Ok(json_args.chars[*json_args.position + offset])
@@ -108,19 +108,19 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                     expecting_key_or_end = true;
                     key = "".to_string();
                 } else {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
             }
             ':' => {
                 if expecting_key_or_end || !expecting_val {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 } else {
                     increment_position(json_args, 1)?;
                 }
             }
             ',' => {
                 if expecting_val || !expecting_key_or_end {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 expecting_val = true;
@@ -129,7 +129,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
             '}' => {
                 if expecting_val || !expecting_key_or_end {
                     // Must not end if we're expecting another value
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 done = true;
@@ -138,7 +138,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
             }
             _ => {
                 if expecting_key_or_end || !expecting_val {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(json_args)?;
@@ -174,7 +174,7 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
             ']' => {
                 if expecting_val {
                     // Must not end if we're expecting another value
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 done = true;
@@ -270,7 +270,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
         expecting_num = false;
 
         if next_char.is_digit(10) {
-            return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+            return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
         }
     }
 
@@ -283,7 +283,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
             '.' => {
                 // '.' char is only valid in the initial number, and can only have one
                 if expecting_num || has_decimal || has_exponent {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 new_num.push(token);
@@ -293,7 +293,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
             'e' | 'E' => {
                 // Only one 'e' or 'E' per number
                 if expecting_num || has_exponent {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 let next_char = get_char_at_offset(json_args, 1)?;
@@ -320,7 +320,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
             }
             tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
                 if expecting_num {
-                    return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 done = true;
@@ -362,7 +362,7 @@ fn get_json_bool(json_args: &mut JsonArgs, t_or_f: &char) -> Result<bool, Box<dy
 
         for i in 0..3 {
             if get_char_at_offset(json_args, 0)? != true_test[i] {
-                return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
             }
 
             increment_position(json_args, 1)?;
@@ -375,7 +375,7 @@ fn get_json_bool(json_args: &mut JsonArgs, t_or_f: &char) -> Result<bool, Box<dy
 
         for i in 0..4 {
             if get_char_at_offset(json_args, 0)? != false_test[i] {
-                return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+                return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
             }
 
             increment_position(json_args, 1)?;
@@ -393,7 +393,7 @@ fn check_null(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
 
     for i in 0..3 {
         if get_char_at_offset(json_args, 0)? != null_test[i] {
-            return Err(Box::new(JsonError::IllegalCharError(*json_args.position)));
+            return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
         }
 
         increment_position(json_args, 1)?;
