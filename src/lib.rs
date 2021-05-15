@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::error;
 use std::error::Error;
 use std::fmt;
 use std::fs;
@@ -38,8 +37,8 @@ impl fmt::Display for JsonError {
     }
 }
 
-impl error::Error for JsonError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+impl Error for JsonError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             JsonError::IllegalChar(_) => None,
             JsonError::UnexpectedEnd => None,
