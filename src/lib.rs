@@ -84,7 +84,8 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
 
     let mut new_json_obj: HashMap<String, JsonValue> = HashMap::new();
     let mut expecting_val: bool = false;
-    let mut expecting_key_or_end: bool = true;
+    let mut expecting_key: bool = true;
+    let mut can_end: bool = true;
     let mut key = "".to_string();
     let mut done: bool = false;
 
@@ -95,38 +96,42 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
 
         match token {
             '"' => {
-                if expecting_key_or_end {
+                if expecting_key {
                     key = get_json_string(json_args)?;
                     expecting_val = true;
-                    expecting_key_or_end = false;
+                    expecting_key = false;
+                    can_end = false;
                 } else if expecting_val {
                     // Val is string
                     let val: JsonValue = JsonValue::new(json_args)?;
                     new_json_obj.insert(key.clone(), val);
                     expecting_val = false;
-                    expecting_key_or_end = true;
+                    can_end = true;
                     key = "".to_string();
                 } else {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
             }
             ':' => {
-                if expecting_key_or_end || !expecting_val {
-                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
-                } else {
-                    increment_position(json_args, 1)?;
-                }
-            }
-            ',' => {
-                if expecting_val || !expecting_key_or_end {
+                if expecting_key || !expecting_val {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
                 expecting_val = true;
+                can_end = false;
+                increment_position(json_args, 1)?;
+            }
+            ',' => {
+                if expecting_val || expecting_key {
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
+                }
+
+                expecting_key = true;
+                can_end = false;
                 increment_position(json_args, 1)?;
             }
             '}' => {
-                if expecting_val || !expecting_key_or_end {
+                if !can_end {
                     // Must not end if we're expecting another value
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
@@ -136,14 +141,14 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 increment_position(json_args, 1)?;
             }
             _ => {
-                if expecting_key_or_end || !expecting_val {
+                if expecting_key || !expecting_val {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(json_args)?;
                 new_json_obj.insert(key.clone(), val);
                 expecting_val = false;
-                expecting_key_or_end = true;
+                can_end = true;
                 key = "".to_string();
             }
         }

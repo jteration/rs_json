@@ -141,4 +141,64 @@ mod tests {
       Err(e) => assert_eq!(e.to_string(), "Invalid char at position 22"),
     }
   }
+
+  #[test]
+  fn test_bad_15() {
+    let path = "./tests/bad_json/test-15.json".to_string();
+
+    match run(&path) {
+      Ok(_) => assert!(false),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+    }
+  }
+
+  #[test]
+  fn test_bad_16() {
+    let path = "./tests/bad_json/test-16.json".to_string();
+
+    match run(&path) {
+      Ok(_) => assert!(false),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+    }
+  }
+
+  #[test]
+  fn test_bad_17() {
+    let path = "./tests/bad_json/test-17.json".to_string();
+
+    match run(&path) {
+      Ok(_) => assert!(false),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 5"),
+    }
+  }
+
+  #[test]
+  fn test_bad_18() {
+    let path = "./tests/bad_json/test-18.json".to_string();
+
+    match run(&path) {
+      Ok(_) => assert!(false),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+    }
+  }
+
+  #[test]
+  fn test_bad_19() {
+    let path = "./tests/bad_json/test-19.json".to_string();
+
+    match run(&path) {
+      Ok(_) => assert!(false),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+    }
+  }
+
+  #[test]
+  fn test_bad_20() {
+    let path = "./tests/bad_json/test-20.json".to_string();
+
+    match run(&path) {
+      Ok(_) => assert!(false),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 16"),
+    }
+  }
 }
