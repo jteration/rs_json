@@ -23,7 +23,7 @@ struct JsonArgs<'a> {
     length: &'a usize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 enum JsonError {
     IllegalChar(usize),
     UnexpectedEnd,
