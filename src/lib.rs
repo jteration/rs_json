@@ -157,7 +157,8 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
     increment_position(json_args, 1)?;
 
     let mut new_json_arr: Vec<JsonValue> = vec![];
-    let mut expecting_val: bool = false;
+    let mut expecting_val: bool = true;
+    let mut can_end: bool = true;
     let mut done: bool = false;
 
     while !done {
@@ -167,12 +168,17 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
 
         match token {
             ',' => {
+                if expecting_val {
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
+                }
+
                 expecting_val = true;
+                can_end = false;
                 increment_position(json_args, 1)?;
             }
             ']' => {
-                if expecting_val {
-                    // Must not end if we're expecting another value
+                if expecting_val && !can_end {
+                    // Must not end if we're following a comma
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
@@ -181,8 +187,13 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
                 increment_position(json_args, 1)?;
             }
             _ => {
+                if !expecting_val {
+                    return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
+                }
+
                 new_json_arr.push(JsonValue::new(json_args)?);
                 expecting_val = false;
+                can_end = true;
             }
         }
     }
