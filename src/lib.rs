@@ -66,8 +66,8 @@ fn get_char_at_offset(json_args: &mut JsonArgs, offset: usize) -> Result<char, B
     Ok(json_args.chars[*json_args.position + offset])
 }
 
-fn is_white_space(token: char) -> bool {
-    token == ' ' || token == '\n' || token == '\r' || token == '\t'
+fn is_white_space(c: char) -> bool {
+    c == ' ' || c == '\n' || c == '\r' || c == '\t'
 }
 
 fn skip_white_space(json_args: &mut JsonArgs) -> Result<(), Box<dyn Error>> {
@@ -92,9 +92,9 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
     while !done {
         skip_white_space(json_args)?;
 
-        let token = get_char_at_offset(json_args, 0)?;
+        let c = get_char_at_offset(json_args, 0)?;
 
-        match token {
+        match c {
             '"' => {
                 if expecting_key {
                     key = get_json_string(json_args)?;
@@ -104,6 +104,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 } else if expecting_val {
                     // Val is string
                     let val: JsonValue = JsonValue::new(json_args)?;
+
                     new_json_obj.insert(key.clone(), val);
                     expecting_val = false;
                     can_end = true;
@@ -144,8 +145,10 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
                 if expecting_key || !expecting_val {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
+
                 // JsonValue::new will check if its a valid value starter
                 let val: JsonValue = JsonValue::new(json_args)?;
+
                 new_json_obj.insert(key.clone(), val);
                 expecting_val = false;
                 can_end = true;
@@ -169,9 +172,9 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
     while !done {
         skip_white_space(json_args)?;
 
-        let token = get_char_at_offset(json_args, 0)?;
+        let c = get_char_at_offset(json_args, 0)?;
 
-        match token {
+        match c {
             ',' => {
                 if expecting_val {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
@@ -179,6 +182,7 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
 
                 expecting_val = true;
                 can_end = false;
+
                 increment_position(json_args, 1)?;
             }
             ']' => {
@@ -188,6 +192,7 @@ fn get_json_array(json_args: &mut JsonArgs) -> Result<Vec<JsonValue>, Box<dyn Er
                 }
 
                 done = true;
+
                 // Put position past closing square bracket
                 increment_position(json_args, 1)?;
             }
@@ -214,9 +219,9 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
     let mut done: bool = false;
 
     while !done {
-        let token = get_char_at_offset(json_args, 0)?;
+        let c = get_char_at_offset(json_args, 0)?;
 
-        match token {
+        match c {
             '\\' => {
                 let escaped_char = get_char_at_offset(json_args, 1)?;
 
@@ -253,7 +258,7 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
                 increment_position(json_args, 1)?;
             }
             _ => {
-                new_string.push(token as u16);
+                new_string.push(c as u16);
                 increment_position(json_args, 1)?;
             }
         }
@@ -264,7 +269,7 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
 
 fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     // Char will be a digit or '-'
-    let mut token = get_char_at_offset(json_args, 0)?;
+    let mut c = get_char_at_offset(json_args, 0)?;
     let mut new_num: Vec<char> = vec![];
     let mut has_decimal: bool = false;
     let mut has_exponent: bool = false;
@@ -273,14 +278,14 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     let mut exponent: Vec<char> = vec![];
 
     // Check if negative
-    if token == '-' {
-        new_num.push(token);
+    if c == '-' {
+        new_num.push(c);
         increment_position(json_args, 1)?;
-        token = get_char_at_offset(json_args, 0)?;
+        c = get_char_at_offset(json_args, 0)?;
     }
 
     // Check for leading '0'
-    if token == '0' {
+    if c == '0' {
         let next_char = get_char_at_offset(json_args, 1)?;
         expecting_num = false;
 
@@ -292,16 +297,16 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
     let mut done: bool = false;
 
     while !done {
-        token = get_char_at_offset(json_args, 0)?;
+        c = get_char_at_offset(json_args, 0)?;
 
-        match token {
+        match c {
             '.' => {
                 // '.' char is only valid in the initial number, and can only have one
                 if expecting_num || has_decimal || has_exponent {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
-                new_num.push(token);
+                new_num.push(c);
                 has_decimal = true;
                 expecting_num = true;
             }
@@ -326,14 +331,14 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
             }
             '0'..='9' => {
                 if has_exponent {
-                    exponent.push(token);
+                    exponent.push(c);
                 } else {
-                    new_num.push(token);
+                    new_num.push(c);
                 }
 
                 expecting_num = false;
             }
-            tok if is_white_space(tok) || tok == ',' || token == '}' || token == ']' => {
+            white_space if is_white_space(white_space) || white_space == ',' || white_space == '}' || white_space == ']' => {
                 if expecting_num {
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
@@ -421,11 +426,11 @@ impl JsonValue {
     fn new(json_args: &mut JsonArgs) -> Result<JsonValue, Box<dyn Error>> {
         skip_white_space(json_args)?;
 
-        let token: char = get_char_at_offset(json_args, 0)?;
+        let c: char = get_char_at_offset(json_args, 0)?;
 
-        let value: JsonValue = match token {
+        let value: JsonValue = match c {
             '"' => JString(get_json_string(json_args)?),
-            'f' | 't' => JBool(get_json_bool(json_args, &token)?),
+            'f' | 't' => JBool(get_json_bool(json_args, &c)?),
             '-' | '0'..='9' => JNum(get_json_num(json_args)?),
             'n' => {
                 check_null(json_args)?;
