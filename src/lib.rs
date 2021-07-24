@@ -19,7 +19,7 @@ pub enum JsonValue {
 struct JsonArgs<'a> {
     chars: &'a Vec<char>,
     position: &'a mut usize,
-    length: &'a usize,
+    length: usize,
 }
 
 #[derive(Debug)]
@@ -31,7 +31,7 @@ enum JsonError {
 impl fmt::Display for JsonError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            JsonError::IllegalChar(position) => write!(f, "Invalid char at position {}", position),
+            JsonError::IllegalChar(position) => write!(f, "Invalid char at position {}", position + 1),
             JsonError::UnexpectedEnd => write!(f, "Reached end of JSON unexpectedly"),
         }
     }
@@ -48,7 +48,7 @@ impl Error for JsonError {
 
 fn increment_position(json_args: &mut JsonArgs, increment_by: usize) -> Result<(), Box<dyn Error>> {
     // Check if new position is past the end of the json string
-    if *json_args.position + increment_by > *json_args.length {
+    if *json_args.position + increment_by > json_args.length {
         return Err(Box::new(JsonError::UnexpectedEnd));
     }
 
@@ -452,7 +452,7 @@ fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
     let mut json_args = JsonArgs {
         chars: &characters,
         position: &mut position,
-        length: &json_length,
+        length: json_length,
     };
 
     let root_value: JsonValue = JsonValue::new(&mut json_args)?;

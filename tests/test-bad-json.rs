@@ -8,7 +8,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 3"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 4"),
     }
   }
 
@@ -18,7 +18,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -28,7 +28,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -58,7 +58,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -88,7 +88,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -128,7 +128,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 6"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 7"),
     }
   }
 
@@ -148,7 +148,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -158,7 +158,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -168,7 +168,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 5"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 6"),
     }
   }
 
@@ -178,7 +178,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -188,7 +188,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 1"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
     }
   }
 
@@ -198,7 +198,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 16"),
+      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 17"),
     }
   }
 }
