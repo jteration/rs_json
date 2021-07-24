@@ -23,7 +23,7 @@ struct JsonArgs<'a> {
 }
 
 #[derive(Debug)]
-enum JsonError {
+pub enum JsonError {
     IllegalChar(usize),
     UnexpectedEnd,
 }
@@ -242,7 +242,7 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
 
                         increment_position(json_args, 4)?;
                     }
-                    _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
+                    _ => return Err(Box::new(JsonError::IllegalChar(*json_args.position))),
                 }
 
                 increment_position(json_args, 2)?;
@@ -340,7 +340,7 @@ fn get_json_num(json_args: &mut JsonArgs) -> Result<f64, Box<dyn Error>> {
 
                 done = true;
             }
-            _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
+            _ => return Err(Box::new(JsonError::IllegalChar(*json_args.position))),
         }
 
         if !done {
@@ -433,7 +433,7 @@ impl JsonValue {
             }
             '{' => JObject(get_json_object(json_args)?),
             '[' => JArray(get_json_array(json_args)?),
-            _ => return Err(format!("Invalid char at position {}", json_args.position).into()),
+            _ => return Err(Box::new(JsonError::IllegalChar(*json_args.position))),
         };
 
         Ok(value)
@@ -462,7 +462,7 @@ fn parse_json(json_string: String) -> Result<JsonValue, Box<dyn Error>> {
         if is_white_space(characters[position]) {
             position += 1;
         } else {
-            return Err(format!("Invalid char at position {}", position).into());
+            return Err(Box::new(JsonError::IllegalChar(position)));
         }
     }
 

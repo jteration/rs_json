@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
   use rs_json::run;
+  use rs_json::JsonError;
 
   #[test]
   fn test_bad_1() {
@@ -8,7 +9,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 4"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(3).to_string()),
     }
   }
 
@@ -18,7 +19,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -28,7 +29,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -48,7 +49,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 4"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(4).to_string()),
     }
   }
 
@@ -58,7 +59,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -68,7 +69,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 4"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(4).to_string()),
     }
   }
 
@@ -78,7 +79,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(2).to_string()),
     }
   }
 
@@ -88,7 +89,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -108,7 +109,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 0"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(0).to_string()),
     }
   }
 
@@ -118,7 +119,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 4"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(4).to_string()),
     }
   }
 
@@ -128,7 +129,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 7"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(6).to_string()),
     }
   }
 
@@ -138,7 +139,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 22"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(22).to_string()),
     }
   }
 
@@ -148,7 +149,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -158,7 +159,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -168,7 +169,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 6"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(5).to_string()),
     }
   }
 
@@ -178,7 +179,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -188,7 +189,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 2"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::IllegalChar(1).to_string()),
     }
   }
 
@@ -198,7 +199,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Invalid char at position 17"),
+      Err(e) => assert_eq!(e.to_string(),JsonError::IllegalChar(16).to_string()),
     }
   }
 }
