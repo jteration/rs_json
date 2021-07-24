@@ -133,7 +133,7 @@ fn get_json_object(json_args: &mut JsonArgs) -> Result<HashMap<String, JsonValue
             }
             '}' => {
                 if !can_end {
-                    // Must not end if we're expecting another value
+                    // Must not end if we're expecting another value or key
                     return Err(Box::new(JsonError::IllegalChar(*json_args.position)));
                 }
 
