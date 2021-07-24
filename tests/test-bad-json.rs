@@ -39,7 +39,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Reached end of JSON unexpectedly"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::UnexpectedEnd.to_string()),
     }
   }
 
@@ -99,7 +99,7 @@ mod tests {
 
     match run(&path) {
       Ok(_) => assert!(false),
-      Err(e) => assert_eq!(e.to_string(), "Reached end of JSON unexpectedly"),
+      Err(e) => assert_eq!(e.to_string(), JsonError::UnexpectedEnd.to_string()),
     }
   }
 
