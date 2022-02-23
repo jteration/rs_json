@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fs;
-use std::str;
 
 use crate::JsonValue::*;
 
@@ -230,10 +229,16 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
             '"' => {
                 if !escaped {
                     done = true;
+                } else {
+                    escaped = false;
                 }
             }
             _ => {
                 new_string.push(c as u16);
+
+                if escaped {
+                    escaped = false;
+                }
             }
         }
 
