@@ -217,51 +217,27 @@ fn get_json_string(json_args: &mut JsonArgs) -> Result<String, Box<dyn Error>> {
 
     let mut new_string: Vec<u16> = vec![];
     let mut done: bool = false;
+    let mut escaped: bool = false;
 
     while !done {
         let c = get_char_at_offset(json_args, 0)?;
 
         match c {
             '\\' => {
-                let escaped_char = get_char_at_offset(json_args, 1)?;
-
-                match escaped_char {
-                    'b' => new_string.push(0008 as u16),
-                    'f' => new_string.push(0012 as u16),
-                    'n' => new_string.push(0010 as u16),
-                    'r' => new_string.push(0013 as u16),
-                    't' => new_string.push(0009 as u16),
-                    '"' => new_string.push(0034 as u16),
-                    '\\' => new_string.push(0092 as u16),
-                    'u' => {
-                        let first_byte = get_char_at_offset(json_args, 2)? as u8;
-                        let second_byte = get_char_at_offset(json_args, 3)? as u8;
-                        let third_byte = get_char_at_offset(json_args, 4)? as u8;
-                        let fourth_byte = get_char_at_offset(json_args, 5)? as u8;
-
-                        let bytes = [first_byte, second_byte, third_byte, fourth_byte];
-
-                        let from_hex: &str = str::from_utf8(&bytes)?;
-                        let as_u16 = u16::from_str_radix(&from_hex, 16)?;
-                        new_string.push(as_u16);
-
-                        increment_position(json_args, 4)?;
-                    }
-                    _ => return Err(Box::new(JsonError::IllegalChar(*json_args.position))),
-                }
-
-                increment_position(json_args, 2)?;
+                escaped = if escaped { false } else { true };
+                new_string.push(c as u16);
             }
             '"' => {
-                done = true;
-                // Put position past closed double quotation
-                increment_position(json_args, 1)?;
+                if !escaped {
+                    done = true;
+                }
             }
             _ => {
                 new_string.push(c as u16);
-                increment_position(json_args, 1)?;
             }
         }
+
+        increment_position(json_args, 1)?;
     }
 
     Ok(String::from_utf16(&new_string)?)
